@@ -10,3 +10,13 @@ pub fn split(chars: []const u8, delimiter: []const u8, allocator: std.mem.Alloca
     }
     return splits;
 }
+
+pub fn isInteger(chars: []const u8) bool {
+    //as per: https://upload.wikimedia.org/wikipedia/commons/1/1b/ASCII-Table-wide.svg
+    for (chars) |c| {
+        if ((c < 48) or (c > 57)) {
+            return false;
+        }
+    }
+    return true;
+}
