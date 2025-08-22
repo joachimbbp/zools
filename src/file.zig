@@ -19,6 +19,7 @@ pub fn addVersion(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8)
     var output = ArrayList(u8).init(alloc);
 
     if (!path.exists(filepath)) {
+        print("path does not exist: {s}\n \n", .{filepath});
         for (filepath) |c| {
             try output.append(c);
         }
@@ -41,6 +42,7 @@ pub fn addVersion(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8)
     defer v_split.deinit();
     const prefix = try std.mem.join(alloc, v_sep, v_split.items[0 .. v_split.items.len - 1]);
     defer alloc.free(prefix);
+    print("prefix: {s}\n", .{prefix});
     const suffix = v_split.items[v_split.items.len - 1];
     var version: u32 = 1;
 
@@ -54,7 +56,7 @@ pub fn addVersion(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8)
     for (result) |c| {
         try output.append(c);
     }
-
+    print("updated\n \n", .{});
     return output;
 }
 
@@ -70,19 +72,21 @@ test "as we go" {
     defer walker.deinit();
 
     while (try walker.next()) |entry| {
-        const filepath = try std.fmt.allocPrint(alloc, "/{s}/{s}", .{ entry.path, entry.basename });
-        //TODO:
+        const filepath = try std.fmt.allocPrint(alloc, "{s}/{s}", .{ entry.path, entry.basename });
         //Okay this is a cwd() issue! this will require some fixing
-        //MAIN: you are *adding* the numbers, not replacing them!
         defer alloc.free(filepath);
         print("filepath: {s}\n", .{filepath});
         const versioned = try addVersion(filepath, alloc);
-        print("updated: {s}\n \n", .{versioned.items});
         defer versioned.deinit();
     }
 
     const version_me = "/Users/joachimpfefferkorn/Desktop/v_10.txt";
     const versioned = try addVersion(version_me, alloc);
     defer versioned.deinit();
-    print("updated: {s}\n", .{versioned.items});
+    print("versioned: {s}\n \n \n", .{versioned.items});
+
+    const version_with_underscore = "/Users/joachimpfefferkorn/Desktop/v_with_under_59.txt";
+    const versioned_alt = try addVersion(version_with_underscore, alloc);
+    defer versioned_alt.deinit();
+    print("alt: {s}\n \n \n", .{versioned_alt.items});
 }
