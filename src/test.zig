@@ -3,6 +3,7 @@
 const std = @import("std");
 const expect = std.testing.expect;
 const print = std.debug.print;
+const sleep = std.Thread.sleep;
 
 const iter = @import("iter.zig");
 const path = @import("path.zig");
@@ -23,7 +24,7 @@ test "build directory if absent" {
     const temp_folder = "./temp";
     try dir.buildIfAbsent(temp_folder);
     try expect(path.exists(temp_folder));
-    std.time.sleep(one_sec);
+    sleep(one_sec);
     try std.fs.cwd().deleteTree(temp_folder);
 }
 

@@ -56,16 +56,19 @@ pub fn addVersion(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8)
     return output;
 }
 
-test "as we go" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const alloc = gpa.allocator();
-    defer _ = gpa.deinit();
-
-    const version_me = "/Users/joachimpfefferkorn/Desktop/v_10.txt";
-    const versioned = try addVersion(version_me, alloc);
-    defer versioned.deinit();
-    print("updated: {s}\n", .{versioned.items});
-}
+// test "as we go" {
+//     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+//     const alloc = gpa.allocator();
+//     defer _ = gpa.deinit();
+//
+//     var dir = try std.fs.Dir.openDir("../test_files/", .{ .iterate = true });
+//     defer dir.close();
+//
+//     const version_me = "/Users/joachimpfefferkorn/Desktop/v_10.txt";
+//     const versioned = try addVersion(version_me, alloc);
+//     defer versioned.deinit();
+//     print("updated: {s}\n", .{versioned.items});
+// }
 
 //Returns the next next file's name in versioning sequence
 // pub fn versionName(path_string: []u8) FileError![]u8 {

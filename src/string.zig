@@ -1,5 +1,5 @@
 const std = @import("std");
-const ArrayList = std.ArrayList;
+const ArrayList = std.array_list.Managed;
 
 pub fn split(chars: []const u8, delimiter: []const u8, alloc: std.mem.Allocator) !ArrayList([]const u8) {
     var splits = ArrayList([]const u8).init(alloc);
