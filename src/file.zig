@@ -4,29 +4,32 @@ const iter = @import("iter.zig");
 const string = @import("string.zig");
 const print = std.debug.print;
 const expect = std.testing.expect;
+const ArrayList = std.ArrayList;
+
 const FileError = error{
     ExtensionError,
 };
 
-//WARNING: WIP
 //Returns path with updated version number, <file_#.ext>, if a file exists at this path
-pub fn addVersion(filepath: []const u8) ![]const u8 {
+pub fn addVersion(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8) {
+    //NOTE: not sure if ArrayList appends and joins are the best way to go about this...
+    //Might be nice for this to return a []const u8 if possible?
     const vsep = "_";
     const f_pattern = "{s}/{s}_{d}.{s}";
-
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
-    defer _ = gpa.deinit();
+    var output = ArrayList(u8).init(alloc);
 
     if (!path.exists(filepath)) {
-        return filepath;
+        for (filepath) |c| {
+            try output.append(c);
+        }
+        return output;
     }
-
-    const folders = try string.split(filepath, "/", allocator);
+    const folders = try string.split(filepath, "/", alloc);
     defer folders.deinit();
-    const directory = try std.mem.join(allocator, "/", folders.items[0 .. folders.items.len - 1]);
+    const directory: []const u8 = try std.mem.join(alloc, "/", folders.items[0 .. folders.items.len - 1]);
+    defer alloc.free(directory);
     const filename = folders.items[folders.items.len - 1];
-    const filename_split = try string.split(filename, ".", allocator);
+    const filename_split = try string.split(filename, ".", alloc);
     defer filename_split.deinit();
     if (filename_split.items.len != 2) {
         return FileError.ExtensionError;
@@ -34,22 +37,34 @@ pub fn addVersion(filepath: []const u8) ![]const u8 {
     const basename = filename_split.items[0];
     const extension = filename_split.items[1];
 
-    const v_split = try string.split(basename, vsep, allocator);
+    const v_split = try string.split(basename, vsep, alloc);
     defer v_split.deinit();
     const suffix = v_split.items[v_split.items.len - 1];
     var version: u32 = 1;
-    if (!string.isInteger(suffix)) {
-        return try std.fmt.allocPrint(allocator, f_pattern, .{ directory, basename, version, extension });
+
+    if (string.isInteger(suffix)) {
+        version = try std.fmt.parseInt(u32, suffix, 10) + 1;
     }
-    version = try std.fmt.parseInt(u32, suffix, 10) + 1;
-    return try std.fmt.allocPrint(allocator, f_pattern, .{ directory, basename, version, extension });
+
+    const result = try std.fmt.allocPrint(alloc, f_pattern, .{ directory, basename, version, extension });
+    defer alloc.free(result);
+
+    for (result) |c| {
+        try output.append(c);
+    }
+
+    return output;
 }
 
 test "as we go" {
-    const known = "/Users/joachimpfefferkorn/repos/zools/src/test.zig";
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const alloc = gpa.allocator();
+    defer _ = gpa.deinit();
+
     const version_me = "/Users/joachimpfefferkorn/Desktop/v_10.txt";
-    print("version name: {s}\n", .{try addVersion(known)});
-    print("updated: {s}\n", .{try addVersion(version_me)});
+    const versioned = try addVersion(version_me, alloc);
+    defer versioned.deinit();
+    print("updated: {s}\n", .{versioned.items});
 }
 
 //Returns the next next file's name in versioning sequence
@@ -58,8 +73,8 @@ test "as we go" {
 //         return path_string;
 //     }
 //
-//     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-//     const allocator = gpa.allocator();
+//     var gpa = std.heap.GeneralPurposealloc(.{}){};
+//     const alloc = gpa.alloc();
 //     defer {
 //         const deinit_status = gpa.deinit();
 //         if (deinit_status == .leak) expect(false) catch @panic("TEST FAIL");
@@ -92,7 +107,7 @@ test "as we go" {
 //         //        version_num = std.fmt.parseInt(u32, version_num_str, 10);
 //         version_num += 1;
 //     }
-//     const output = std.fmt.allocPrint(allocator, "{s}/{s}_{d}.{s}", .{ base_path, basename, version_num, extension }) catch FileError.OutOfMemory;
-//     //defer allocator.free(output);
+//     const output = std.fmt.allocPrint(alloc, "{s}/{s}_{d}.{s}", .{ base_path, basename, version_num, extension }) catch FileError.OutOfMemory;
+//     //defer alloc.free(output);
 //     return output;
 // }
