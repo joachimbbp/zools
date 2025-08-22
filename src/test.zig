@@ -39,7 +39,7 @@ test "splitting" {
     try std.testing.expect(std.mem.eql(u8, csv_list.items[10], "10"));
 }
 test "is number" {
-    try expect(string.isNumber("42"));
-    try expect(string.isNumber("0"));
-    try expect(!string.isNumber("ham"));
+    try expect(string.isInteger("42"));
+    try expect(string.isInteger("0"));
+    try expect(!string.isInteger("ham"));
 }
