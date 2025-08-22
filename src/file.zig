@@ -4,7 +4,7 @@ const iter = @import("iter.zig");
 const string = @import("string.zig");
 const print = std.debug.print;
 const expect = std.testing.expect;
-const ArrayList = std.ArrayList;
+const ArrayList = std.array_list.Managed;
 
 const FileError = error{
     ExtensionError,
@@ -14,7 +14,7 @@ const FileError = error{
 pub fn addVersion(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8) {
     //NOTE: not sure if ArrayList appends and joins are the best way to go about this...
     //Might be nice for this to return a []const u8 if possible?
-    const vsep = "_";
+    const v_sep = "_";
     const f_pattern = "{s}/{s}_{d}.{s}";
     var output = ArrayList(u8).init(alloc);
 
@@ -37,8 +37,10 @@ pub fn addVersion(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8)
     const basename = filename_split.items[0];
     const extension = filename_split.items[1];
 
-    const v_split = try string.split(basename, vsep, alloc);
+    const v_split = try string.split(basename, v_sep, alloc);
     defer v_split.deinit();
+    const prefix = try std.mem.join(alloc, v_sep, v_split.items[0 .. v_split.items.len - 1]);
+    defer alloc.free(prefix);
     const suffix = v_split.items[v_split.items.len - 1];
     var version: u32 = 1;
 
@@ -46,7 +48,7 @@ pub fn addVersion(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8)
         version = try std.fmt.parseInt(u32, suffix, 10) + 1;
     }
 
-    const result = try std.fmt.allocPrint(alloc, f_pattern, .{ directory, basename, version, extension });
+    const result = try std.fmt.allocPrint(alloc, f_pattern, .{ directory, prefix, version, extension });
     defer alloc.free(result);
 
     for (result) |c| {
@@ -68,12 +70,19 @@ test "as we go" {
     defer walker.deinit();
 
     while (try walker.next()) |entry| {
-        print("dir entry: {s}/{s}\n", .{ entry.path, entry.basename });
+        const filepath = try std.fmt.allocPrint(alloc, "/{s}/{s}", .{ entry.path, entry.basename });
+        //TODO:
+        //Okay this is a cwd() issue! this will require some fixing
+        //MAIN: you are *adding* the numbers, not replacing them!
+        defer alloc.free(filepath);
+        print("filepath: {s}\n", .{filepath});
+        const versioned = try addVersion(filepath, alloc);
+        print("updated: {s}\n \n", .{versioned.items});
+        defer versioned.deinit();
     }
 
-    //
-    // const version_me = "/Users/joachimpfefferkorn/Desktop/v_10.txt";
-    // const versioned = try addVersion(version_me, alloc);
-    // defer versioned.deinit();
-    // print("updated: {s}\n", .{versioned.items});
+    const version_me = "/Users/joachimpfefferkorn/Desktop/v_10.txt";
+    const versioned = try addVersion(version_me, alloc);
+    defer versioned.deinit();
+    print("updated: {s}\n", .{versioned.items});
 }
