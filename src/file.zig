@@ -56,61 +56,24 @@ pub fn addVersion(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8)
     return output;
 }
 
-// test "as we go" {
-//     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-//     const alloc = gpa.allocator();
-//     defer _ = gpa.deinit();
-//
-//     var dir = try std.fs.Dir.openDir("../test_files/", .{ .iterate = true });
-//     defer dir.close();
-//
-//     const version_me = "/Users/joachimpfefferkorn/Desktop/v_10.txt";
-//     const versioned = try addVersion(version_me, alloc);
-//     defer versioned.deinit();
-//     print("updated: {s}\n", .{versioned.items});
-// }
+test "as we go" {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const alloc = gpa.allocator();
+    defer _ = gpa.deinit();
 
-//Returns the next next file's name in versioning sequence
-// pub fn versionName(path_string: []u8) FileError![]u8 {
-//     if (!path.exists(path_string)) {
-//         return path_string;
-//     }
-//
-//     var gpa = std.heap.GeneralPurposealloc(.{}){};
-//     const alloc = gpa.alloc();
-//     defer {
-//         const deinit_status = gpa.deinit();
-//         if (deinit_status == .leak) expect(false) catch @panic("TEST FAIL");
-//     }
-//     var path_split = std.mem.splitBackwardsScalar(u8, path_string, '/');
-//     const filename = path_split.first();
-//     const base_path = path_split.rest();
-//     var fname_split = std.mem.splitBackwardsScalar(u8, filename, '.');
-//     if (iter.len(fname_split) != 2) {
-//         return FileError.InvalidExtensionNumber;
-//     }
-//     const extension = fname_split.first();
-//     const basename = fname_split.next().?;
-//
-//     var version_split = std.mem.splitBackwardsScalar(u8, filename, '_');
-//     const version_num_str = version_split.first();
-//     var first_version = false;
-//     for (version_num_str) |c| {
-//         std.debug.print("character: {d}\n", .{c});
-//         if ((c < 0) or (c > 9)) {
-//             //file is not a version
-//             first_version = true;
-//             break;
-//         }
-//     }
-//
-//     var version_num: u32 = 1;
-//     if (!first_version) {
-//         std.debug.print("version number string: {s}\n", .{version_num_str});
-//         //        version_num = std.fmt.parseInt(u32, version_num_str, 10);
-//         version_num += 1;
-//     }
-//     const output = std.fmt.allocPrint(alloc, "{s}/{s}_{d}.{s}", .{ base_path, basename, version_num, extension }) catch FileError.OutOfMemory;
-//     //defer alloc.free(output);
-//     return output;
-// }
+    var dir = try std.fs.cwd().openDir("../test_files/", .{ .iterate = true });
+    defer dir.close();
+
+    var walker = try dir.walk(alloc);
+    defer walker.deinit();
+
+    while (try walker.next()) |entry| {
+        print("dir entry: {s}/{s}\n", .{ entry.path, entry.basename });
+    }
+
+    //
+    // const version_me = "/Users/joachimpfefferkorn/Desktop/v_10.txt";
+    // const versioned = try addVersion(version_me, alloc);
+    // defer versioned.deinit();
+    // print("updated: {s}\n", .{versioned.items});
+}
