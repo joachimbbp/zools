@@ -64,15 +64,15 @@ test "as we go" {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const alloc = gpa.allocator();
     defer _ = gpa.deinit();
-
-    var dir = try std.fs.cwd().openDir("../test_files/", .{ .iterate = true });
+    //probably need to run from root, not src
+    var dir = try std.fs.cwd().openDir("/test_files", .{ .iterate = true });
     defer dir.close();
 
     var walker = try dir.walk(alloc);
     defer walker.deinit();
 
     while (try walker.next()) |entry| {
-        const filepath = try std.fmt.allocPrint(alloc, "{s}/{s}", .{ entry.path, entry.basename });
+        const filepath = try std.fs.Dir.readLink(entry.
         //Okay this is a cwd() issue! this will require some fixing
         defer alloc.free(filepath);
         print("filepath: {s}\n", .{filepath});
