@@ -68,5 +68,32 @@ test "ls" {
     // defer item.deinit();
     // print("item: {s}\n", .{item.items[0]});
 }
+test "versioning" {
+    //NOTE: this test particularly could use a lot of work
 
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const alloc = gpa.allocator();
+    defer _ = gpa.deinit();
+    //probably need to run from root, not src
+
+    const version_me = "/Users/joachimpfefferkorn/Desktop/v_10.txt";
+    const versioned = try path.addVersion(version_me, alloc);
+    defer versioned.deinit();
+    print("versioned: {s}\n \n \n", .{versioned.items});
+
+    const first_version = "/Users/joachimpfefferkorn/Desktop/ham.txt";
+    const first_versioned = try path.addVersion(first_version, alloc);
+    defer first_versioned.deinit();
+    print("first versioned: {s}\n \n \n", .{first_versioned.items});
+
+    const version_with_underscore = "/Users/joachimpfefferkorn/Desktop/v_with_under_59.txt";
+    const versioned_alt = try path.addVersion(version_with_underscore, alloc);
+    defer versioned_alt.deinit();
+    print("alt: {s}\n \n \n", .{versioned_alt.items});
+
+    // const ds_store = "/Users/joachimpfefferkorn/Desktop/.Ds_store";
+    // const ds_stored = try addVersion(ds_store, alloc);
+    // defer ds_stored.deinit();
+    // print("ds store test {s}", .{ds_stored.items});
+}
 //TODO: build test files programatically

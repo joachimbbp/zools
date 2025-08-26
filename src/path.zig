@@ -23,7 +23,6 @@ pub fn exists(path: []const u8) bool {
 //Separate basename function would be used many places
 
 // Lists all the files in a directory
-// If input is not a directory, it simply returns the input (like the unix ls command)
 pub fn ls(path: []const u8, alloc: std.mem.Allocator) !ArrayList([]u8) {
     if (!exists(path)) {
         return PathError.PathDoesNotExist;
@@ -89,34 +88,5 @@ pub fn addVersion(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8)
     for (result) |c| {
         try output.append(c);
     }
-    print("v split: ", .{});
-    debug.printItems(v_split);
-    print("filename: {s}\n", .{filename});
-    print("prefix: {s}\n", .{prefix});
-    print("suffix: {s}\n", .{suffix});
     return output;
-}
-
-test "as we go" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const alloc = gpa.allocator();
-    defer _ = gpa.deinit();
-    //probably need to run from root, not src
-    var dir = try std.fs.cwd().openDir("./test_files", .{ .iterate = true });
-    defer dir.close();
-
-    const version_me = "/Users/joachimpfefferkorn/Desktop/v_10.txt";
-    const versioned = try addVersion(version_me, alloc);
-    defer versioned.deinit();
-    print("versioned: {s}\n \n \n", .{versioned.items});
-
-    const first_version = "/Users/joachimpfefferkorn/Desktop/ham.txt";
-    const first_versioned = try addVersion(first_version, alloc);
-    defer first_versioned.deinit();
-    print("first versioned: {s}\n \n \n", .{first_versioned.items});
-
-    const version_with_underscore = "/Users/joachimpfefferkorn/Desktop/v_with_under_59.txt";
-    const versioned_alt = try addVersion(version_with_underscore, alloc);
-    defer versioned_alt.deinit();
-    print("alt: {s}\n \n \n", .{versioned_alt.items});
 }
