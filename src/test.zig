@@ -60,5 +60,13 @@ test "ls" {
 
     const list = try path.ls("/Users/joachimpfefferkorn/repos/zools/test_files", a);
     defer list.deinit();
-    print("list: {s}\n", .{list.items[0]});
+    for (0..list.items.len) |n| {
+        print("item: {s}\n", .{list.items[n]});
+    }
+
+    // const item = try path.ls("/Users/joachimpfefferkorn/repos/zools/test_files/ham.txt", a);
+    // defer item.deinit();
+    // print("item: {s}\n", .{item.items[0]});
 }
+
+//TODO: build test files programatically
