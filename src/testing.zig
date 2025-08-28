@@ -14,7 +14,9 @@ const string = @import("string.zig");
 
 const one_sec: u64 = 1 * std.time.ns_per_s;
 
-const test_dir = "./test_files";
+const test_dir = "./test_files_2b31fe56-0219-4e02-84d7-b113a2b19bd8";
+
+//fn clear_test_files(){}
 
 test "path exists" {
     //TODO: build custom folders so this doesn't need to run from the root
