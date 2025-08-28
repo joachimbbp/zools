@@ -1,5 +1,5 @@
 //NOTE: must run from the project root, not src
-//should run as: <zig test src/test.zig>
+//should run as: <zig test src/testing.zig>
 
 const std = @import("std");
 const expect = std.testing.expect;
@@ -19,7 +19,7 @@ const test_dir = "./test_files";
 test "path exists" {
     //TODO: build custom folders so this doesn't need to run from the root
     try expect(!path.exists("hd998e9db-f335-4499-91e0-cb941fdeed3/home"));
-    try expect(path.exists("./src/test.zig"));
+    try expect(path.exists("./src/testing.zig"));
     try expect(path.exists(test_dir));
 }
 
