@@ -12,5 +12,5 @@
 
     .dependencies = .{},
 
-    .paths = .{ "build.zig", "build.zig.zon", "src", "LICENSE", "README.md" },
+    .paths = .{ "zools.zig", "build.zig", "build.zig.zon", "src", "LICENSE", "README.md" },
 }
