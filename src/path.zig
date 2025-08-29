@@ -18,10 +18,6 @@ pub fn exists(path: []const u8) bool {
     return true;
 }
 
-// Returns true only if the path is to a folder
-//TODO: isDir function
-//Separate basename function would be used many places
-
 // Lists all the files in a directory
 pub fn ls(path: []const u8, alloc: std.mem.Allocator) !ArrayList([]u8) {
     if (!exists(path)) {
@@ -42,7 +38,20 @@ pub fn ls(path: []const u8, alloc: std.mem.Allocator) !ArrayList([]u8) {
     return output;
 }
 
-pub fn addVersion(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8) {
+//NOTE: this is where I left off:
+// pub fn basepath(path_string: []const u8, alloc: std.mem.Allocator) !ArrayList(u8) {
+//     const path_iter = std.mem.splitSequence(u8, path_string, "/");
+//     var splits = ArrayList([]const u8).init(alloc);
+//     while (path_iter.next()) |n| {
+//         try splits.append(n);
+//     }
+//     //    if (std.mem.splitBackwardsSequence(u8, splits[splits.items.len-1], ".").first()
+//   //
+// }
+
+pub fn versionName(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8) {
+    //TODO: replace deprecated hand rolled split with std.mem.splitSequence
+    //Integrate basepath (maybe write some others?)
     const v_sep = "_";
     const f_pattern = "{s}/{s}_{d}.{s}";
     var output = ArrayList(u8).init(alloc);

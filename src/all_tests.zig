@@ -8,7 +8,7 @@ const sleep = std.Thread.sleep;
 
 const iter = @import("iter.zig");
 const path = @import("path.zig");
-const dir = @import("dir.zig");
+const save = @import("save.zig");
 const string = @import("string.zig");
 const debug = @import("debug.zig");
 const one_sec: u64 = 1 * std.time.ns_per_s;
@@ -52,7 +52,7 @@ test "files and paths" {
         const item = list.items[n];
         try expect(path.exists(item));
         print("🐛 Item {s} exists\n", .{item});
-        const versioned = try path.addVersion(list.items[n], alloc);
+        const versioned = try path.versionName(list.items[n], alloc);
         defer versioned.deinit(); //alloc.free(versioned);
         print("🦋 Item {s} versioned name is {s}\n", .{ item, versioned.items });
         //TODO: [ ] save versions here (function not implemented yet)
@@ -60,10 +60,10 @@ test "files and paths" {
     print("👁️ Look at the project root to see the files created\n", .{});
     sleep(one_sec * 3);
 
-    try expect(!try dir.buildIfAbsent(test_dir_1));
+    try expect(!try save.dirIfAbsent(test_dir_1));
     print("🗺️ Test dir exists at {s}\n     no new dir created\n", .{test_dir_1});
 
-    try expect(try dir.buildIfAbsent(test_dir_2));
+    try expect(try save.dirIfAbsent(test_dir_2));
     print("🫜 Second test dir created at the root. Take a look before it disappears in 3 seconds\n", .{});
     sleep(one_sec * 3);
     try std.fs.cwd().deleteTree(test_dir_2);
