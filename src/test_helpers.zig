@@ -1,25 +1,23 @@
 const std = @import("std");
 const string = @import("string.zig");
-const test_dir = "./test_files_2b31fe56-0219-4e02-84d7-b113a2b19bd8";
+const ArrayList = std.array_list.Managed;
 
-fn build_test_files() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const alloc = gpa.allocator();
-
-    try std.fs.cwd().makeDir(test_dir);
-    //try std.fmt.allocPrint(alloc, "{s}/{s}", .{ path, entry.basename });
-    const files_csv = "ham.txt,spam.txt,version_me_41.txt,land.txt";
-    const files = try string.split(files_csv, ",", alloc);
-    defer files.deinit();
+// Outputs valid paths to test against.
+pub fn test_paths(dir: []const u8, files_csv: []const u8, alloc: std.mem.Allocator) !ArrayList([]const u8) {
+    try std.fs.cwd().makeDir(dir);
+    const files = try string.split(
+        files_csv,
+        ",",
+        alloc,
+    );
 
     for (files.items) |file| {
-        const output = try std.fmt.allocPrint(alloc, "{s}/{s}", .{ test_dir, file });
+        const output = try std.fmt.allocPrint(alloc, "{s}/{s}", .{ dir, file });
         defer alloc.free(output);
         _ = try std.fs.cwd().createFile(output, .{});
     }
+    //    files.append(dir);
+    return files;
 }
 
-test "helpers" {
-    try build_test_files();
-}
+//TODO: delete test files
