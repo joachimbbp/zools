@@ -1,10 +1,11 @@
 const std = @import("std");
+const Io = std.Io;
+
 const path = @import("path.zig");
 const ArrayList = std.array_list.Managed;
 
 // Builds a directory if one is not present at that filepath
 // Returns true for absent paths
-//WARNING: not sure if this will save outside of currnet directory
 pub fn dirIfAbsent(path_string: []const u8) !bool {
     if (!try path.exists(path_string)) {
         try std.fs.cwd().makeDir(path_string);
@@ -13,10 +14,9 @@ pub fn dirIfAbsent(path_string: []const u8) !bool {
     return false;
 }
 
-// Saves file as a version, returns the filename of the newly saved version
-// pub fn saveVersion(path_string: []const u8, alloc: std.mem.Allocator) !ArrayList() {
-//     const version_name = path.versionName(path_string, alloc);
-//
-//NOTE: need basepath here! so you don't have to do cwd()
-// }
-//
+pub fn version(path_string: []const u8, alloc: std.mem.Allocator) !ArrayList(u8) {
+    const file_name = try path.versionName(path_string, alloc);
+    const file = try std.fs.cwd().createFile(file_name.items, .{});
+    defer file.close();
+    return file_name;
+}

@@ -42,20 +42,7 @@ pub fn ls(path: []const u8, alloc: std.mem.Allocator) !ArrayList([]u8) {
     return output;
 }
 
-//NOTE: this is where I left off:
-// pub fn basepath(path_string: []const u8, alloc: std.mem.Allocator) !ArrayList(u8) {
-//     const path_iter = std.mem.splitSequence(u8, path_string, "/");
-//     var splits = ArrayList([]const u8).init(alloc);
-//     while (path_iter.next()) |n| {
-//         try splits.append(n);
-//     }
-//     //    if (std.mem.splitBackwardsSequence(u8, splits[splits.items.len-1], ".").first()
-//   //
-// }
-
 pub fn versionName(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8) {
-    //TODO: replace deprecated hand rolled split with std.mem.splitSequence
-    //Integrate basepath (maybe write some others?)
     const version_delimiter = "_";
     const f_pattern = "{s}/{s}_{d}.{s}";
     var output = ArrayList(u8).init(alloc);
@@ -93,6 +80,7 @@ pub fn versionName(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8
     var prefix: []const u8 = undefined;
 
     const possible_version_number = version_split.first();
+    print("possible version number: {s}\n", .{possible_version_number});
     if (string.isInteger(possible_version_number)) {
         version = try std.fmt.parseInt(u32, possible_version_number, 10) + 1;
         prefix = version_split.rest();

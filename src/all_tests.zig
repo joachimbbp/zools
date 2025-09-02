@@ -5,6 +5,7 @@ const std = @import("std");
 const expect = std.testing.expect;
 const print = std.debug.print;
 const sleep = std.Thread.sleep;
+const ArrayList = std.array_list.Managed;
 
 const iter = @import("iter.zig");
 const path = @import("path.zig");
@@ -42,6 +43,10 @@ test "files and paths" {
 
     //build test paths, deinit and delete at the end of this test
     try helpers.buildTestPaths(test_dir_1, test_files_csv, alloc);
+    //check your test directory exists
+    try expect(try path.exists(test_dir_1));
+    //Appears that a non-local path works as well (commenting out for other users)
+    //    try expect(try path.exists("/Users/joachimpfefferkorn/Desktop/select weirdness.mov"));
     print("\n", .{});
 
     const list = try path.ls(test_dir_1, arena);
@@ -51,10 +56,9 @@ test "files and paths" {
         const item = list.items[n];
         try expect(try path.exists(item));
         print("🐛 Item {s} exists\n", .{item});
-        const versioned = try path.versionName(list.items[n], alloc);
-        defer versioned.deinit(); //alloc.free(versioned);
-        print("🦋 Item {s} versioned name is {s}\n", .{ item, versioned.items });
-        //TODO: [ ] save versions here (function not implemented yet)
+        const versioned = try save.version(list.items[n], alloc);
+        defer versioned.deinit();
+        print("🦋 Item {s} versioned as {s}\n", .{ item, versioned.items });
     }
     print("👁️ Look at the project root to see the files created\n", .{});
     sleep(one_sec * 3);
@@ -83,4 +87,27 @@ test "strings" {
     try expect(string.isInteger("42"));
     try expect(string.isInteger("0"));
     try expect(!string.isInteger("ham"));
+}
+test "sequence" {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const alloc = gpa.allocator();
+
+    print("🎥 saving a sequence\n", .{});
+
+    _ = try save.dirIfAbsent("./seq");
+
+    var current = ArrayList(u8).init(alloc);
+    defer current.deinit();
+    try current.appendSlice("./seq/frame.txt");
+
+    for (0..24) |_| {
+        const next = try save.version(current.items, alloc);
+        print("     🎞️ version: {s}\n", .{next.items});
+        current.deinit();
+        current = next;
+    }
+    print("🎬 sequence saved. Test folder will stay for 3 seconds\n", .{});
+    sleep(one_sec * 3);
+    try std.fs.cwd().deleteTree("./seq"); //too lazy to not hard code this
 }
