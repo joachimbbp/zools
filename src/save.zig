@@ -6,7 +6,7 @@ const ArrayList = std.array_list.Managed;
 // Returns true for absent paths
 //WARNING: not sure if this will save outside of currnet directory
 pub fn dirIfAbsent(path_string: []const u8) !bool {
-    if (!path.exists(path_string)) {
+    if (!try path.exists(path_string)) {
         try std.fs.cwd().makeDir(path_string);
         return true;
     }

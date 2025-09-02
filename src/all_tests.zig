@@ -26,10 +26,10 @@ test "hello and debug" {
 //PATH STUFF:
 test "files and paths" {
     //random UUID path does not exist
-    try expect(!path.exists("hd998e9db-f335-4499-91e0-cb941fdeed3/home"));
+    try expect(!try path.exists("hd998e9db-f335-4499-91e0-cb941fdeed3/home"));
 
     //clear test_dir_1 if its still around
-    if (path.exists(test_dir_1)) {
+    if (try path.exists(test_dir_1)) {
         try std.fs.cwd().deleteTree(test_dir_1);
     }
 
@@ -49,7 +49,7 @@ test "files and paths" {
 
     for (0..list.items.len) |n| {
         const item = list.items[n];
-        try expect(path.exists(item));
+        try expect(try path.exists(item));
         print("🐛 Item {s} exists\n", .{item});
         const versioned = try path.versionName(list.items[n], alloc);
         defer versioned.deinit(); //alloc.free(versioned);
@@ -71,22 +71,14 @@ test "files and paths" {
 }
 test "strings" {
     print("🎻 testing strings\n", .{});
-    // var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    // defer _ = gpa.deinit();
-    // const allocator = gpa.allocator();
-    //
     const csv_string = "0,1,2,3,4,5,6,7,8,9,10";
-    //    const csv_list = try string.split(csv_string, ",", allocator);
-    //    defer csv_list.deinit();
     var csv_iter = std.mem.splitSequence(u8, csv_string, ",");
-    //try std.testing.expectEqual(@as(usize, 11), csv_iter.buffer.len);
     print("csv iter debug: {d}\n", .{csv_iter.index.?});
     var i: usize = 0;
     while (csv_iter.next()) |value| : (i += 1) {
         print("     🪕value {s} should equal index {d}\n", .{ value, i });
         try std.testing.expectEqual(std.fmt.parseInt(usize, value, 10), i);
     }
-    //    try std.testing.expect(std.mem.eql(u8, .items[10], "10"));
 
     try expect(string.isInteger("42"));
     try expect(string.isInteger("0"));

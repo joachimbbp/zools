@@ -17,5 +17,3 @@ pub fn buildTestPaths(dir: []const u8, files_csv: []const u8, alloc: std.mem.All
         alloc.free(output);
     }
 }
-
-//TODO: delete test files

@@ -10,17 +10,21 @@ const PathError = error{
     ExtensionError,
 };
 
-pub fn exists(path: []const u8) bool {
-    _ = std.fs.cwd().openFile(path, .{}) catch {
-        //WARNING: blunt instrument, not fully covered, clean this guy up!
-        return false;
+pub fn exists(path: []const u8) !bool {
+    const local = std.fs.cwd();
+    _ = std.fs.Dir.access(local, path, .{}) catch |err| {
+        if (err == std.posix.AccessError.FileNotFound) {
+            return false;
+        } else {
+            return err;
+        }
     };
     return true;
 }
 
 // Lists all the files in a directory
 pub fn ls(path: []const u8, alloc: std.mem.Allocator) !ArrayList([]u8) {
-    if (!exists(path)) {
+    if (!try exists(path)) {
         return PathError.PathDoesNotExist;
     }
     var dir = try std.fs.cwd().openDir(path, .{ .iterate = true });
@@ -56,7 +60,7 @@ pub fn versionName(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8
     const f_pattern = "{s}/{s}_{d}.{s}";
     var output = ArrayList(u8).init(alloc);
 
-    if (!exists(filepath)) {
+    if (!try exists(filepath)) {
         print("path does not exist: {s}\n \n", .{filepath});
         for (filepath) |c| {
             try output.append(c);
