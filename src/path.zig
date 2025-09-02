@@ -52,7 +52,7 @@ pub fn ls(path: []const u8, alloc: std.mem.Allocator) !ArrayList([]u8) {
 pub fn versionName(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8) {
     //TODO: replace deprecated hand rolled split with std.mem.splitSequence
     //Integrate basepath (maybe write some others?)
-    const v_sep = "_";
+    const version_delimiter = "_";
     const f_pattern = "{s}/{s}_{d}.{s}";
     var output = ArrayList(u8).init(alloc);
 
@@ -63,33 +63,39 @@ pub fn versionName(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8
         }
         return output;
     }
-    const folders = try string.split(filepath, "/", alloc);
-    defer folders.deinit();
-    const directory: []const u8 = try std.mem.join(alloc, "/", folders.items[0 .. folders.items.len - 1]);
+    var path_segments = std.mem.splitBackwardsSequence(u8, filepath, "/");
+    const filename = path_segments.first();
+
+    var path_segment_list = ArrayList([]const u8).init(alloc);
+    while (path_segments.next()) |segment| {
+        try path_segment_list.append(segment);
+    }
+    const directory = try std.mem.join(alloc, "/", path_segment_list.items);
+    path_segment_list.deinit();
     defer alloc.free(directory);
-    const filename = folders.items[folders.items.len - 1];
-    const filename_split = try string.split(filename, ".", alloc);
-    defer filename_split.deinit();
-    if (filename_split.items.len != 2) {
+
+    var filename_segments = std.mem.splitSequence(u8, filename, ".");
+    if (iter.len(filename_segments) != 2) {
         return PathError.ExtensionError;
     }
-    const basename = filename_split.items[0];
-    const extension = filename_split.items[1];
+
+    const basename = filename_segments.first();
+    const extension = filename_segments.rest();
 
     //filebasename ... any underscores ... version number
-    const v_split = try string.split(basename, v_sep, alloc);
-    defer v_split.deinit();
+    var version_split = std.mem.splitBackwardsSequence(u8, basename, version_delimiter);
 
-    var prefix_chop: u1 = 0;
-    const suffix = v_split.items[v_split.items.len - 1];
     var version: u32 = 1;
+    var prefix: []const u8 = undefined;
 
-    if (string.isInteger(suffix)) {
-        version = try std.fmt.parseInt(u32, suffix, 10) + 1;
-        prefix_chop = 1;
-    } else {}
-    const prefix = try std.mem.join(alloc, v_sep, v_split.items[0 .. v_split.items.len - prefix_chop]);
-    defer alloc.free(prefix);
+    const possible_version_number = version_split.first();
+    if (string.isInteger(possible_version_number)) {
+        version = try std.fmt.parseInt(u32, possible_version_number, 10) + 1;
+        prefix = version_split.rest();
+    } else {
+        version_split.reset();
+        prefix = version_split.rest();
+    }
 
     const result = try std.fmt.allocPrint(alloc, f_pattern, .{ directory, prefix, version, extension });
     defer alloc.free(result);

@@ -41,8 +41,7 @@ test "files and paths" {
     const arena = arena_alloc.allocator(); //wow that is confusing naming!
 
     //build test paths, deinit and delete at the end of this test
-    const test_paths = try helpers.test_paths(test_dir_1, test_files_csv, alloc);
-    defer test_paths.deinit();
+    try helpers.buildTestPaths(test_dir_1, test_files_csv, alloc);
     print("\n", .{});
 
     const list = try path.ls(test_dir_1, arena);
@@ -71,15 +70,23 @@ test "files and paths" {
     try std.fs.cwd().deleteTree(test_dir_1);
 }
 test "strings" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
-
+    print("🎻 testing strings\n", .{});
+    // var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    // defer _ = gpa.deinit();
+    // const allocator = gpa.allocator();
+    //
     const csv_string = "0,1,2,3,4,5,6,7,8,9,10";
-    const csv_list = try string.split(csv_string, ",", allocator);
-    defer csv_list.deinit();
-    try std.testing.expectEqual(@as(usize, 11), csv_list.items.len);
-    try std.testing.expect(std.mem.eql(u8, csv_list.items[10], "10"));
+    //    const csv_list = try string.split(csv_string, ",", allocator);
+    //    defer csv_list.deinit();
+    var csv_iter = std.mem.splitSequence(u8, csv_string, ",");
+    //try std.testing.expectEqual(@as(usize, 11), csv_iter.buffer.len);
+    print("csv iter debug: {d}\n", .{csv_iter.index.?});
+    var i: usize = 0;
+    while (csv_iter.next()) |value| : (i += 1) {
+        print("     🪕value {s} should equal index {d}\n", .{ value, i });
+        try std.testing.expectEqual(std.fmt.parseInt(usize, value, 10), i);
+    }
+    //    try std.testing.expect(std.mem.eql(u8, .items[10], "10"));
 
     try expect(string.isInteger("42"));
     try expect(string.isInteger("0"));
