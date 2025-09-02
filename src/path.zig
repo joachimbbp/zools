@@ -59,6 +59,7 @@ pub fn versionName(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8
 
     var path_segment_list = ArrayList([]const u8).init(alloc);
     while (path_segments.next()) |segment| {
+        if (std.mem.eql(u8, segment, ".")) continue;
         try path_segment_list.append(segment);
     }
     const directory = try std.mem.join(alloc, "/", path_segment_list.items);
@@ -80,7 +81,6 @@ pub fn versionName(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8
     var prefix: []const u8 = undefined;
 
     const possible_version_number = version_split.first();
-    print("possible version number: {s}\n", .{possible_version_number});
     if (string.isInteger(possible_version_number)) {
         version = try std.fmt.parseInt(u32, possible_version_number, 10) + 1;
         prefix = version_split.rest();
@@ -89,6 +89,7 @@ pub fn versionName(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8
         prefix = version_split.rest();
     }
 
+    //print("directory: {s}\nprefix: {s}\nversion: {d}\nexteionsion: {s}\n", .{ directory, prefix, version, extension });
     const result = try std.fmt.allocPrint(alloc, f_pattern, .{ directory, prefix, version, extension });
     defer alloc.free(result);
 

@@ -12,6 +12,10 @@ const path = @import("path.zig");
 const save = @import("save.zig");
 const string = @import("string.zig");
 const debug = @import("debug.zig");
+
+//this quick switch determines whether or not your temp folders
+//stay alive for a second to view them in the finder
+const spot_check = false;
 const one_sec: u64 = 1 * std.time.ns_per_s;
 
 const test_dir_1 = "./test_files_2b31fe56-0219-4e02-84d7-b113a2b19bd8";
@@ -60,18 +64,21 @@ test "files and paths" {
         defer versioned.deinit();
         print("🦋 Item {s} versioned as {s}\n", .{ item, versioned.items });
     }
-    print("👁️ Look at the project root to see the files created\n", .{});
-    sleep(one_sec * 3);
-
+    if (spot_check) {
+        print("👁️ Look at the project root to see the files created\n", .{});
+        sleep(one_sec * 3);
+    }
     try expect(!try save.dirIfAbsent(test_dir_1));
     print("🗺️ Test dir exists at {s}\n     no new dir created\n", .{test_dir_1});
 
     try expect(try save.dirIfAbsent(test_dir_2));
-    print("🫜 Second test dir created at the root. Take a look before it disappears in 3 seconds\n", .{});
-    sleep(one_sec * 3);
-    try std.fs.cwd().deleteTree(test_dir_2);
-
+    if (spot_check) {
+        print("🫜 Second test dir created at the root. Take a look before it disappears in 3 seconds\n", .{});
+        sleep(one_sec * 3);
+        try std.fs.cwd().deleteTree(test_dir_2);
+    }
     try std.fs.cwd().deleteTree(test_dir_1);
+    try std.fs.cwd().deleteTree(test_dir_2);
 }
 test "strings" {
     print("🎻 testing strings\n", .{});
@@ -93,13 +100,16 @@ test "sequence" {
     defer _ = gpa.deinit();
     const alloc = gpa.allocator();
 
+    const folder = "./seq";
     print("🎥 saving a sequence\n", .{});
 
-    _ = try save.dirIfAbsent("./seq");
+    _ = try save.dirIfAbsent(folder);
 
     var current = ArrayList(u8).init(alloc);
     defer current.deinit();
-    try current.appendSlice("./seq/frame.txt");
+    const ap = try std.fmt.allocPrint(alloc, "{s}/{s}", .{ folder, "frame.txt" });
+    defer alloc.free(ap);
+    try current.appendSlice(ap);
 
     for (0..24) |_| {
         const next = try save.version(current.items, alloc);
@@ -107,7 +117,9 @@ test "sequence" {
         current.deinit();
         current = next;
     }
-    print("🎬 sequence saved. Test folder will stay for 3 seconds\n", .{});
-    sleep(one_sec * 3);
+    if (spot_check) {
+        print("🎬 sequence saved. Test folder will stay for 3 seconds\n", .{});
+        sleep(one_sec * 3);
+    }
     try std.fs.cwd().deleteTree("./seq"); //too lazy to not hard code this
 }
