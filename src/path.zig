@@ -48,7 +48,7 @@ pub fn versionName(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8
     var output = ArrayList(u8).init(alloc);
 
     if (!try exists(filepath)) {
-        print("path does not exist: {s}\n \n", .{filepath});
+        //  print("path does not exist: {s}\n", .{filepath});
         for (filepath) |c| {
             try output.append(c);
         }
