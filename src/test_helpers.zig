@@ -3,21 +3,17 @@ const string = @import("string.zig");
 const ArrayList = std.array_list.Managed;
 
 // Outputs valid paths to test against.
-pub fn test_paths(dir: []const u8, files_csv: []const u8, alloc: std.mem.Allocator) !ArrayList([]const u8) {
+// file_csv MUST be comma separated
+pub fn buildTestPaths(dir: []const u8, files_csv: []const u8, alloc: std.mem.Allocator) !void {
     try std.fs.cwd().makeDir(dir);
-    const files = try string.split(
-        files_csv,
-        ",",
-        alloc,
-    );
+    var file_paths = std.mem.splitSequence(u8, files_csv, ",");
 
-    for (files.items) |file| {
+    var files = ArrayList([]u8).init(alloc);
+    defer files.deinit();
+    while (file_paths.next()) |file| {
         const output = try std.fmt.allocPrint(alloc, "{s}/{s}", .{ dir, file });
-        defer alloc.free(output);
         _ = try std.fs.cwd().createFile(output, .{});
+        try files.append(output);
+        alloc.free(output);
     }
-    //    files.append(dir);
-    return files;
 }
-
-//TODO: delete test files
