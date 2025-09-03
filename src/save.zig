@@ -14,7 +14,9 @@ pub fn dirIfAbsent(path_string: []const u8) !bool {
     return false;
 }
 
+// If a file exists at that place, save a new version of it
 pub fn version(path_string: []const u8, alloc: std.mem.Allocator) !ArrayList(u8) {
+    //TODO: version for directory as well
     const file_name = try path.versionName(path_string, alloc);
     const file = try std.fs.cwd().createFile(file_name.items, .{});
     defer file.close();
