@@ -5,6 +5,8 @@ const ArrayList = std.array_list.Managed;
 // Outputs valid paths to test against.
 // file_csv MUST be comma separated
 pub fn buildTestPaths(dir: []const u8, files_csv: []const u8, alloc: std.mem.Allocator) !void {
+    //TODO:
+    //You could write in a buffer here if you felt like it!
     try std.fs.cwd().makeDir(dir);
     var file_paths = std.mem.splitSequence(u8, files_csv, ",");
 

@@ -16,6 +16,7 @@ const debug = @import("debug.zig");
 //this quick switch determines whether or not your temp folders
 //stay alive for a second to view them in the finder
 const spot_check = false;
+const clear_at_end = true;
 const one_sec: u64 = 1 * std.time.ns_per_s;
 
 const test_dir_1 = "./test_files_2b31fe56-0219-4e02-84d7-b113a2b19bd8";
@@ -55,12 +56,16 @@ test "files and paths" {
 
     const list = try path.ls(test_dir_1, arena);
     defer list.deinit();
-
+    var dummy_buffer = ArrayList(u8).init(alloc);
+    defer dummy_buffer.deinit();
+    for ("lorem ipsum") |c| {
+        try dummy_buffer.append(c);
+    }
     for (0..list.items.len) |n| {
         const item = list.items[n];
         try expect(try path.exists(item));
         print("🐛 Item {s} exists\n", .{item});
-        const versioned = try save.version(list.items[n], alloc);
+        const versioned = try save.version(list.items[n], dummy_buffer, alloc);
         defer versioned.deinit();
         print("🦋 Item {s} versioned as {s}\n", .{ item, versioned.items });
     }
@@ -77,8 +82,10 @@ test "files and paths" {
         sleep(one_sec * 3);
         try std.fs.cwd().deleteTree(test_dir_2);
     }
-    try std.fs.cwd().deleteTree(test_dir_1);
-    try std.fs.cwd().deleteTree(test_dir_2);
+    if (clear_at_end) {
+        try std.fs.cwd().deleteTree(test_dir_1);
+        try std.fs.cwd().deleteTree(test_dir_2);
+    }
 }
 test "strings" {
     print("🎻 testing strings\n", .{});
@@ -100,7 +107,10 @@ test "sequence" {
     defer _ = gpa.deinit();
     const alloc = gpa.allocator();
 
-    const folder = "./seq";
+    const folder = "./seq_8f3e45ea-824e-47b8-b405-35b1584caa27";
+    if (try path.exists(folder)) {
+        try std.fs.cwd().deleteTree(folder);
+    }
     print("🎥 saving a sequence\n", .{});
 
     _ = try save.dirIfAbsent(folder);
@@ -110,9 +120,16 @@ test "sequence" {
     const ap = try std.fmt.allocPrint(alloc, "{s}/{s}", .{ folder, "frame.txt" });
     defer alloc.free(ap);
     try current.appendSlice(ap);
-
+    var dummy_buffer = ArrayList(u8).init(alloc);
+    defer dummy_buffer.deinit();
+    for ("Image Sequence\n") |c| {
+        try dummy_buffer.append(c);
+    }
     for (0..24) |_| {
-        const next = try save.version(current.items, alloc);
+        for ("Another Frame\n") |c| {
+            try dummy_buffer.append(c);
+        }
+        const next = try save.version(current.items, dummy_buffer, alloc);
         print("     🎞️ version: {s}\n", .{next.items});
         current.deinit();
         current = next;
@@ -121,5 +138,10 @@ test "sequence" {
         print("🎬 sequence saved. Test folder will stay for 3 seconds\n", .{});
         sleep(one_sec * 3);
     }
-    try std.fs.cwd().deleteTree("./seq"); //too lazy to not hard code this
+    if (clear_at_end) {
+        try std.fs.cwd().deleteTree(folder); //too lazy to not hard code this
+    }
+}
+test "end" {
+    print("🏁Tests have ended\n", .{});
 }
