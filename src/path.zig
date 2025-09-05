@@ -42,10 +42,11 @@ pub fn ls(path: []const u8, alloc: std.mem.Allocator) !ArrayList([]u8) {
     return output;
 }
 
-pub fn versionName(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8) {
+//WARNING: presently this 1 indexes: 0 isn't treated as version number
+pub fn versionName(filepath: []const u8, arena: std.mem.Allocator) !ArrayList(u8) {
     const version_delimiter = "_";
     const f_pattern = "{s}/{s}_{d}.{s}";
-    var output = ArrayList(u8).init(alloc);
+    var output = ArrayList(u8).init(arena);
 
     if (!try exists(filepath)) {
         //  print("path does not exist: {s}\n", .{filepath});
@@ -57,14 +58,14 @@ pub fn versionName(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8
     var path_segments = std.mem.splitBackwardsSequence(u8, filepath, "/");
     const filename = path_segments.first();
 
-    var path_segment_list = ArrayList([]const u8).init(alloc);
+    var path_segment_list = ArrayList([]const u8).init(arena);
     while (path_segments.next()) |segment| {
         if (std.mem.eql(u8, segment, ".")) continue;
         try path_segment_list.append(segment);
     }
-    const directory = try std.mem.join(alloc, "/", path_segment_list.items);
+    const directory = try std.mem.join(arena, "/", path_segment_list.items);
     path_segment_list.deinit();
-    defer alloc.free(directory);
+    defer arena.free(directory);
 
     var filename_segments = std.mem.splitSequence(u8, filename, ".");
     if (iter.len(filename_segments) != 2) {
@@ -90,11 +91,15 @@ pub fn versionName(filepath: []const u8, alloc: std.mem.Allocator) !ArrayList(u8
     }
 
     //print("directory: {s}\nprefix: {s}\nversion: {d}\nexteionsion: {s}\n", .{ directory, prefix, version, extension });
-    const result = try std.fmt.allocPrint(alloc, f_pattern, .{ directory, prefix, version, extension });
-    defer alloc.free(result);
+    var result: []const u8 = try std.fmt.allocPrint(arena, f_pattern, .{ directory, prefix, version, extension });
+
+    if (try exists(result)) {
+        result = (try versionName(result, arena)).items;
+    }
 
     for (result) |c| {
         try output.append(c);
     }
+    arena.free(result);
     return output;
 }

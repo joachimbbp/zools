@@ -65,10 +65,15 @@ test "files and paths" {
         const item = list.items[n];
         try expect(try path.exists(item));
         print("🐛 Item {s} exists\n", .{item});
-        const versioned = try save.version(list.items[n], dummy_buffer, alloc);
+        const versioned = try save.version(list.items[n], dummy_buffer, arena);
         defer versioned.deinit();
         print("🦋 Item {s} versioned as {s}\n", .{ item, versioned.items });
     }
+    //try back with some previous versions
+    const v1 = try save.version(list.items[0], dummy_buffer, arena);
+    defer v1.deinit();
+    const v2 = try save.version(list.items[list.items.len - 1], dummy_buffer, arena);
+    defer v2.deinit();
     if (spot_check) {
         print("👁️ Look at the project root to see the files created\n", .{});
         sleep(one_sec * 3);
