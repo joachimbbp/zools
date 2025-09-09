@@ -36,7 +36,6 @@ pub fn ls(path: []const u8, alloc: std.mem.Allocator) !ArrayList([]u8) {
 
     while (try walker.next()) |entry| {
         const abs = try std.fmt.allocPrint(alloc, "{s}/{s}", .{ path, entry.basename });
-        //        print("abs: {s}\n", .{abs});
         try output.append(abs);
     }
     return output;

@@ -12,7 +12,7 @@ const path = @import("path.zig");
 const save = @import("save.zig");
 const string = @import("string.zig");
 const debug = @import("debug.zig");
-
+const uuid = @import("uuid.zig");
 //this quick switch determines whether or not your temp folders
 //stay alive for a second to view them in the finder
 const spot_check = false;
@@ -145,6 +145,13 @@ test "sequence" {
     }
     if (clear_at_end) {
         try std.fs.cwd().deleteTree(folder); //too lazy to not hard code this
+    }
+}
+
+test "UUID" {
+    print("🎲 ten, totally random UUIDs (UUID Version 4):\n", .{});
+    for (0..10) |_| {
+        std.debug.print("      🪪 {s}\n", .{uuid.v4()});
     }
 }
 test "end" {
