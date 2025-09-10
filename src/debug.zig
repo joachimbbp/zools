@@ -6,9 +6,3 @@ const print = std.debug.print;
 pub fn helloZools() void {
     print("🦎 Hello Zools! 🦎\n", .{});
 }
-// pub fn printItems(list: ArrayList([]const u8)) void {
-//     for (list.items) |item| {
-//         print("{s},", .{item});
-//     }
-//     print("\n", .{});
-// }
