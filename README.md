@@ -4,3 +4,10 @@
 
 # 🦎
 Helpful zig abstractions
+
+
+# 🏗️
+Test by running `zig build test` from the root. 
+
+# 📇
+Uses zig version 0.15.1
