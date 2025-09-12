@@ -60,15 +60,6 @@ pub const Parts = struct {
     }
 };
 
-test "parts" {
-    const p = try Parts.init("/ham/spam/land/hello_5.vdb");
-
-    std.debug.print(
-        "directory: {s}\nfilename: {s}\nbasename: {s}\nextension: {s}\n",
-        .{ p.directory, p.filename, p.basename, p.extension },
-    );
-}
-
 //WARNING: presently this 1 indexes: 0 isn't treated as version number
 pub fn versionName(filepath: []const u8, arena: std.mem.Allocator) !ArrayList(u8) {
     const version_delimiter = "_";

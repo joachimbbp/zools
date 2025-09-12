@@ -13,10 +13,11 @@ const save = @import("save.zig");
 const string = @import("string.zig");
 const debug = @import("debug.zig");
 const uuid = @import("uuid.zig");
-//this quick switch determines whether or not your temp folders
-//stay alive for a second to view them in the finder
+//
+//NOTE: temp folder persistence bools, can be user set:
 const spot_check = false;
 const clear_at_end = true;
+
 const one_sec: u64 = 1 * std.time.ns_per_s;
 
 const test_dir_1 = "./test_files_2b31fe56-0219-4e02-84d7-b113a2b19bd8";
@@ -109,10 +110,13 @@ test "strings" {
 }
 
 test "parts" {
+    const sample = "/Users/joachimpfefferkorn/repos/neurovolume/src/zools/README.md";
+    print("🛣️ Splitting Path into component parts\n Path: {s}\n", .{sample});
+
     const p = try path.Parts.init("/ham/spam/land/hello_5.vdb");
 
     std.debug.print(
-        "directory: {s}\nfilename: {s}\nbasename: {s}\nextension: {s}\n",
+        "🧱 parts:\n    directory: {s}\n    filename: {s}\n    basename: {s}\n    extension: {s}\n",
         .{ p.directory, p.filename, p.basename, p.extension },
     );
 }
