@@ -107,6 +107,16 @@ test "strings" {
     try expect(string.isInteger("0"));
     try expect(!string.isInteger("ham"));
 }
+
+test "parts" {
+    const p = try path.Parts.init("/ham/spam/land/hello_5.vdb");
+
+    std.debug.print(
+        "directory: {s}\nfilename: {s}\nbasename: {s}\nextension: {s}\n",
+        .{ p.directory, p.filename, p.basename, p.extension },
+    );
+}
+
 test "sequence" {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -157,3 +167,4 @@ test "UUID" {
 test "end" {
     print("🏁Tests have ended\n", .{});
 }
+

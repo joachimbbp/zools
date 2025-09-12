@@ -82,7 +82,7 @@ pub fn versionName(filepath: []const u8, arena: std.mem.Allocator) !ArrayList(u8
         }
         return output;
     }
-    const parts = try Parts.init(filepath, arena);
+    const parts = try Parts.init(filepath);
 
     var version: u32 = 1;
     var prefix: []const u8 = undefined;
@@ -106,6 +106,6 @@ pub fn versionName(filepath: []const u8, arena: std.mem.Allocator) !ArrayList(u8
     for (result) |c| {
         try output.append(c);
     }
-    arena.deinit();
+    arena.free(result);
     return output;
 }

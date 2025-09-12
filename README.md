@@ -11,3 +11,9 @@ Test by running `zig build test` from the root.
 
 # 📇
 Uses zig version `0.15.1`.
+
+# 📋 To-Do
+- [ ] CLI for `spot_check` and `clear_at_end` in `src/all-tests.zig`
+- [ ] `gitignore` for test files and folders
+	- Probably can be read from some shared config file
+- [ ] See if `path.Parts` is useful anywhere else
