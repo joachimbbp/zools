@@ -1,4 +1,8 @@
-//NOTE: must run from the project root, not src
+//NOTE: temp folder persistence bools, can be user set:
+const spot_check = false;
+const clear_at_end = false;
+
+//WARN: must run from the project root, not src
 //should run as: <zig test src/testing.zig>
 
 const std = @import("std");
@@ -13,10 +17,6 @@ const save = @import("save.zig");
 const string = @import("string.zig");
 const debug = @import("debug.zig");
 const uuid = @import("uuid.zig");
-//
-//NOTE: temp folder persistence bools, can be user set:
-const spot_check = false;
-const clear_at_end = true;
 
 const one_sec: u64 = 1 * std.time.ns_per_s;
 
@@ -66,23 +66,28 @@ test "files and paths" {
         const item = list.items[n];
         try expect(try path.exists(item));
         print("🐛 Item {s} exists\n", .{item});
-        const versioned = try save.version(list.items[n], dummy_buffer, arena);
+        const versioned = try save.versionFile(list.items[n], dummy_buffer, arena);
         defer versioned.deinit();
         print("🦋 Item {s} versioned as {s}\n", .{ item, versioned.items });
     }
     //try back with some previous versions
-    const v1 = try save.version(list.items[0], dummy_buffer, arena);
+    const v1 = try save.versionFile(list.items[0], dummy_buffer, arena);
     defer v1.deinit();
-    const v2 = try save.version(list.items[list.items.len - 1], dummy_buffer, arena);
+    const v2 = try save.versionFile(list.items[list.items.len - 1], dummy_buffer, arena);
     defer v2.deinit();
     if (spot_check) {
         print("👁️ Look at the project root to see the files created\n", .{});
         sleep(one_sec * 3);
     }
-    try expect(!try save.dirIfAbsent(test_dir_1));
-    print("🗺️ Test dir exists at {s}\n     no new dir created\n", .{test_dir_1});
-
+    if (!try save.dirIfAbsent(test_dir_1)) {
+        print("🗺️ Test dir exists at {s}\n     no new dir created\n", .{test_dir_1});
+    }
     try expect(try save.dirIfAbsent(test_dir_2));
+
+    //Versioning folders:
+    const f1 = try save.versionDir(test_dir_2, alloc);
+    defer f1.deinit();
+    print("📍 versioned test dir created at {s}\n", .{f1.items});
     if (spot_check) {
         print("🫜 Second test dir created at the root. Take a look before it disappears in 3 seconds\n", .{});
         sleep(one_sec * 3);
@@ -148,7 +153,7 @@ test "sequence" {
         for ("Another Frame\n") |c| {
             try dummy_buffer.append(c);
         }
-        const next = try save.version(current.items, dummy_buffer, alloc);
+        const next = try save.versionFile(current.items, dummy_buffer, alloc);
         print("     🎞️ version: {s}\n", .{next.items});
         current.deinit();
         current = next;
@@ -171,4 +176,3 @@ test "UUID" {
 test "end" {
     print("🏁Tests have ended\n", .{});
 }
-
