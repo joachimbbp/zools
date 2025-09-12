@@ -45,44 +45,23 @@ pub const Parts = struct {
     filename: []const u8,
     basename: []const u8,
     extension: []const u8,
-    pub fn init(filepath: []const u8, arena: std.mem.Allocator) !Parts {
-        var path_segments = std.mem.splitBackwardsSequence(u8, filepath, "/");
-        const filename = path_segments.first();
-
-        var path_segment_list = ArrayList([]const u8).init(arena);
-        while (path_segments.next()) |segment| {
-            if (std.mem.eql(u8, segment, ".")) continue;
-            try path_segment_list.append(segment);
-        }
-        var directory = try std.mem.join(arena, "/", path_segment_list.items);
-        path_segment_list.deinit();
-        directory = try std.mem.concat(arena, u8, &.{ "/", directory }); //ROBOT:
-        //WARN: I hadn't included the leading / before, so let's see if this works!
-        var filename_segments = std.mem.splitSequence(u8, filename, ".");
-        if (iter.len(filename_segments) != 2) {
-            return PathError.ExtensionError;
-        }
-
-        const basename = filename_segments.first();
-        const extension = filename_segments.rest();
-
+    pub fn init(filepath: []const u8) !Parts {
+        const dir = std.fs.path.dirname(filepath).?;
+        const file = std.fs.path.basenamePosix(filepath);
+        const dot_i = std.mem.lastIndexOfScalar(u8, file, '.').?; //ROBOT:
+        const base = file[0..dot_i];
+        const ext = file[dot_i + 1 ..];
         return Parts{
-            .directory = directory,
-            .filename = filename,
-            .basename = basename,
-            .extension = extension,
+            .directory = dir,
+            .filename = file,
+            .basename = base,
+            .extension = ext,
         };
     }
 };
 
 test "parts" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const alloc = gpa.allocator();
-    var arena_alloc = std.heap.ArenaAllocator.init(alloc);
-    defer arena_alloc.deinit();
-    const arena = arena_alloc.allocator(); //wow that is confusing naming!
-    const p = try Parts.init("/ham/spam/land/hello_5.vdb", arena);
+    const p = try Parts.init("/ham/spam/land/hello_5.vdb");
 
     std.debug.print(
         "directory: {s}\nfilename: {s}\nbasename: {s}\nextension: {s}\n",
@@ -91,43 +70,42 @@ test "parts" {
 }
 
 //WARNING: presently this 1 indexes: 0 isn't treated as version number
-// pub fn versionName(filepath: []const u8, arena: std.mem.Allocator) !ArrayList(u8) {
-//     const version_delimiter = "_";
-//     const f_pattern = "{s}/{s}_{d}.{s}";
-//     var output = ArrayList(u8).init(arena);
-//
-//     if (!try exists(filepath)) {
-//         //  print("path does not exist: {s}\n", .{filepath});
-//         for (filepath) |c| {
-//             try output.append(c);
-//         }
-//         return output;
-//     }
-//     //TODO: fileparts here!
-//     //filebasename ... any underscores ... version number
-//     const parts = Parts.init(filepath, arena, version_delimiter);
-//     //print("directory: {s}\nprefix: {s}\nversion: {d}\nexteionsion: {s}\n", .{ directory, prefix, version, extension });
-//        var version: u32 = 1;
-// var prefix: []const u8 = undefined;
-// const possible_version_number = version_split.first();
-// if (string.isInteger(possible_version_number)) {
-//     version = try std.fmt.parseInt(u32, possible_version_number, 10) + 1;
-//     prefix = version_split.rest();
-// } else {
-//     version_split.reset();
-//     prefix = version_split.rest();
-// }
-//
-//
-//     var result: []const u8 = try std.fmt.allocPrint(arena, f_pattern, .{ directory, prefix, version, extension });
-//
-//     if (try exists(result)) {
-//         result = (try versionName(result, arena)).items;
-//     }
-//
-//     for (result) |c| {
-//         try output.append(c);
-//     }
-//     arena.free(result);
-//     return output;
-// }
+pub fn versionName(filepath: []const u8, arena: std.mem.Allocator) !ArrayList(u8) {
+    const version_delimiter = "_";
+    const f_pattern = "{s}/{s}_{d}.{s}";
+    var output = ArrayList(u8).init(arena);
+
+    if (!try exists(filepath)) {
+        //  print("path does not exist: {s}\n", .{filepath});
+        for (filepath) |c| {
+            try output.append(c);
+        }
+        return output;
+    }
+    const parts = try Parts.init(filepath, arena);
+
+    var version: u32 = 1;
+    var prefix: []const u8 = undefined;
+    var version_split = std.mem.splitBackwardsSequence(u8, parts.basename, version_delimiter);
+
+    const possible_version_number = version_split.first();
+    if (string.isInteger(possible_version_number)) {
+        version = try std.fmt.parseInt(u32, possible_version_number, 10) + 1;
+        prefix = version_split.rest();
+    } else {
+        version_split.reset();
+        prefix = version_split.rest();
+    }
+
+    var result: []const u8 = try std.fmt.allocPrint(arena, f_pattern, .{ parts.directory, prefix, version, parts.extension });
+
+    if (try exists(result)) {
+        result = (try versionName(result, arena)).items;
+    }
+
+    for (result) |c| {
+        try output.append(c);
+    }
+    arena.deinit();
+    return output;
+}
