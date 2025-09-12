@@ -1,7 +1,7 @@
 const std = @import("std");
 const iter = @import("iter.zig");
-const string = @import("string.zig");
 const debug = @import("debug.zig");
+const string = @import("string.zig");
 const print = std.debug.print;
 const ArrayList = std.array_list.Managed;
 
@@ -40,6 +40,25 @@ pub fn ls(path: []const u8, alloc: std.mem.Allocator) !ArrayList([]u8) {
     }
     return output;
 }
+pub const Parts = struct {
+    directory: []const u8,
+    filename: []const u8,
+    basename: []const u8,
+    extension: []const u8,
+    pub fn init(filepath: []const u8) !Parts {
+        const dir = std.fs.path.dirname(filepath).?;
+        const file = std.fs.path.basenamePosix(filepath);
+        const dot_i = std.mem.lastIndexOfScalar(u8, file, '.').?; //ROBOT:
+        const base = file[0..dot_i];
+        const ext = file[dot_i + 1 ..];
+        return Parts{
+            .directory = dir,
+            .filename = file,
+            .basename = base,
+            .extension = ext,
+        };
+    }
+};
 
 //WARNING: presently this 1 indexes: 0 isn't treated as version number
 pub fn versionName(filepath: []const u8, arena: std.mem.Allocator) !ArrayList(u8) {
@@ -54,31 +73,11 @@ pub fn versionName(filepath: []const u8, arena: std.mem.Allocator) !ArrayList(u8
         }
         return output;
     }
-    var path_segments = std.mem.splitBackwardsSequence(u8, filepath, "/");
-    const filename = path_segments.first();
-
-    var path_segment_list = ArrayList([]const u8).init(arena);
-    while (path_segments.next()) |segment| {
-        if (std.mem.eql(u8, segment, ".")) continue;
-        try path_segment_list.append(segment);
-    }
-    const directory = try std.mem.join(arena, "/", path_segment_list.items);
-    path_segment_list.deinit();
-    defer arena.free(directory);
-
-    var filename_segments = std.mem.splitSequence(u8, filename, ".");
-    if (iter.len(filename_segments) != 2) {
-        return PathError.ExtensionError;
-    }
-
-    const basename = filename_segments.first();
-    const extension = filename_segments.rest();
-
-    //filebasename ... any underscores ... version number
-    var version_split = std.mem.splitBackwardsSequence(u8, basename, version_delimiter);
+    const parts = try Parts.init(filepath);
 
     var version: u32 = 1;
     var prefix: []const u8 = undefined;
+    var version_split = std.mem.splitBackwardsSequence(u8, parts.basename, version_delimiter);
 
     const possible_version_number = version_split.first();
     if (string.isInteger(possible_version_number)) {
@@ -89,8 +88,7 @@ pub fn versionName(filepath: []const u8, arena: std.mem.Allocator) !ArrayList(u8
         prefix = version_split.rest();
     }
 
-    //print("directory: {s}\nprefix: {s}\nversion: {d}\nexteionsion: {s}\n", .{ directory, prefix, version, extension });
-    var result: []const u8 = try std.fmt.allocPrint(arena, f_pattern, .{ directory, prefix, version, extension });
+    var result: []const u8 = try std.fmt.allocPrint(arena, f_pattern, .{ parts.directory, prefix, version, parts.extension });
 
     if (try exists(result)) {
         result = (try versionName(result, arena)).items;
