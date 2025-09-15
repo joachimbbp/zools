@@ -21,14 +21,12 @@ pub fn version(
     buffer: ArrayList(u8),
     alloc: std.mem.Allocator,
 ) !ArrayList(u8) {
-
-    const file_name = try path.versionName(path_string, alloc);
+    const file_name = try path.versionName(path_string, alloc, false);
     const file = try std.fs.cwd().createFile(file_name.items, .{});
     try file.writeAll(buffer.items);
     defer file.close();
     return file_name;
 }
-
 
 pub fn versionFolder(path_string: []const u8, arena: std.mem.Allocator) !ArrayList(u8) {
     const folder_name = try path.folderVersionName(path_string, arena);
@@ -44,5 +42,4 @@ test "folder version" {
     const arena = arena_alloc.allocator(); //wow that is confusing naming!
     const new_name = try versionFolder("/Users/joachimpfefferkorn/Desktop/lib_test", arena);
     std.debug.print("folder versioned at: {s}\n", .{new_name.items});
-
 }
