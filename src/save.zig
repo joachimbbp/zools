@@ -13,17 +13,30 @@ pub fn dirIfAbsent(path_string: []const u8) !bool {
     }
     return false;
 }
-
-// If a file exists at that place, save a new version of it
 pub fn version(
     path_string: []const u8,
     buffer: ArrayList(u8),
     alloc: std.mem.Allocator,
 ) !ArrayList(u8) {
-    //TODO: version for directory as well
     const file_name = try path.versionName(path_string, alloc);
     const file = try std.fs.cwd().createFile(file_name.items, .{});
     try file.writeAll(buffer.items);
     defer file.close();
     return file_name;
+}
+
+pub fn versionFolder(path_string: []const u8, arena: std.mem.Allocator) !ArrayList(u8) {
+    const folder_name = try path.folderVersionName(path_string, arena);
+    try std.fs.cwd().makeDir(folder_name.items);
+    return folder_name;
+}
+test "folder version" {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const alloc = gpa.allocator();
+    var arena_alloc = std.heap.ArenaAllocator.init(alloc);
+    defer arena_alloc.deinit();
+    const arena = arena_alloc.allocator(); //wow that is confusing naming!
+    const new_name = try versionFolder("/Users/joachimpfefferkorn/Desktop/lib_test", arena);
+    std.debug.print("folder versioned at: {s}\n", .{new_name.items});
 }

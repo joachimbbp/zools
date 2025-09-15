@@ -22,6 +22,15 @@ pub fn exists(path: []const u8) !bool {
     return true;
 }
 
+pub fn isDir(path: []const u8) bool { //ROBOT: function is gpt copypasta
+    var cwd = std.fs.cwd();
+    if (cwd.openDir(path, .{})) |dir| {
+        dir.close();
+        return true;
+    } else |_| {
+        return false;
+    }
+}
 // Lists all the files in a directory
 pub fn ls(path: []const u8, alloc: std.mem.Allocator) !ArrayList([]u8) {
     if (!try exists(path)) {
@@ -60,6 +69,7 @@ pub const Parts = struct {
     }
 };
 
+//CURSED: This whole version pattern is very cursed!
 //WARNING: presently this 1 indexes: 0 isn't treated as version number
 pub fn versionName(filepath: []const u8, arena: std.mem.Allocator) !ArrayList(u8) {
     const version_delimiter = "_";
@@ -90,6 +100,55 @@ pub fn versionName(filepath: []const u8, arena: std.mem.Allocator) !ArrayList(u8
 
     var result: []const u8 = try std.fmt.allocPrint(arena, f_pattern, .{ parts.directory, prefix, version, parts.extension });
 
+    if (try exists(result)) {
+        result = (try versionName(result, arena)).items;
+    }
+
+    for (result) |c| {
+        try output.append(c);
+    }
+    arena.free(result);
+    return output;
+}
+
+pub const FolderParts = struct {
+    directory: []const u8,
+    foldername: []const u8,
+
+    pub fn init(filepath: []const u8) !FolderParts {
+        const dir = std.fs.path.dirname(filepath).?;
+        const foldername = std.fs.path.basenamePosix(filepath);
+        return FolderParts{
+            .directory = dir,
+            .foldername = foldername,
+        };
+    }
+};
+
+pub fn folderVersionName(folderpath: []const u8, arena: std.mem.Allocator) !ArrayList(u8) {
+    const version_delimiter = "_";
+    var output = ArrayList(u8).init(arena);
+    if (!try exists(folderpath)) {
+        for (folderpath) |c| {
+            try output.append(c);
+        }
+        return output;
+    }
+
+    const parts = try FolderParts.init(folderpath);
+    var version: u32 = 1;
+    var prefix: []const u8 = undefined;
+    var version_split = std.mem.splitBackwardsSequence(u8, parts.foldername, version_delimiter);
+
+    const pv_number = version_split.first();
+    if (string.isInteger(pv_number)) {
+        version = try std.fmt.parseInt(u32, pv_number, 10) + 1;
+        prefix = version_split.rest();
+    } else {
+        version_split.reset();
+        prefix = version_split.rest();
+    }
+    var result: []const u8 = try std.fmt.allocPrint(arena, "{s}_{d}", .{ folderpath, version });
     if (try exists(result)) {
         result = (try versionName(result, arena)).items;
     }
