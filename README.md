@@ -16,6 +16,6 @@ Uses zig version `0.15.1`.
 - [ ] 📜 CLI for `spot_check` and `clear_at_end` in `src/all-tests.zig`
 - [ ] 🗃️ `gitignore` for test files and folders
 	- Probably can be read from some shared config file
-- [ ] 🧟 Fixed cursed save-as logic naming conventions in `save.zig` and `path.zig`
+- [ ] 🧟 Fixed cursed save-as logic and naming conventions in `save.zig` and `path.zig`
     - [ ] 🧪 Add tests for these as well
 - [ ] 📇 Establish naming and arg-order conventions (especially for allocators)
