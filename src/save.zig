@@ -13,6 +13,8 @@ pub fn dirIfAbsent(path_string: []const u8) !bool {
     }
     return false;
 }
+//TODO: SHould be called fileVersion or
+//generally un-curse this whole versioning logic
 pub fn version(
     path_string: []const u8,
     buffer: ArrayList(u8),

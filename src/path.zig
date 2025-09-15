@@ -55,6 +55,7 @@ pub const Parts = struct {
     basename: []const u8,
     extension: []const u8,
     pub fn init(filepath: []const u8) !Parts {
+        print("initializing parts\n", .{});
         const dir = std.fs.path.dirname(filepath).?;
         const file = std.fs.path.basenamePosix(filepath);
         const dot_i = std.mem.lastIndexOfScalar(u8, file, '.').?; //ROBOT:
@@ -116,6 +117,7 @@ pub const FolderParts = struct {
     foldername: []const u8,
 
     pub fn init(filepath: []const u8) !FolderParts {
+        print("initializing folder parts\n", .{});
         const dir = std.fs.path.dirname(filepath).?;
         const foldername = std.fs.path.basenamePosix(filepath);
         return FolderParts{
@@ -148,9 +150,10 @@ pub fn folderVersionName(folderpath: []const u8, arena: std.mem.Allocator) !Arra
         version_split.reset();
         prefix = version_split.rest();
     }
-    var result: []const u8 = try std.fmt.allocPrint(arena, "{s}_{d}", .{ folderpath, version });
+    var result: []const u8 = try std.fmt.allocPrint(arena, "{s}/{s}_{d}", .{ parts.directory, prefix, version });
+    print("result: {s}\n", .{result});
     if (try exists(result)) {
-        result = (try versionName(result, arena)).items;
+        result = (try folderVersionName(result, arena)).items;
     }
 
     for (result) |c| {
