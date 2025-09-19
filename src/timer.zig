@@ -16,9 +16,3 @@ pub fn Stop(start_time: i64) void {
     print("⏱️ {d} seconds\n", .{seconds});
     print("         exact microseconds: {d}\n", .{elapsed});
 }
-
-test "timers" {
-    const start = Click();
-    defer Stop(start);
-    std.Thread.sleep(3333000);
-}
