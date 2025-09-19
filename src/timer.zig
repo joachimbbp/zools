@@ -12,7 +12,7 @@ pub fn Click() i64 {
 pub fn Stop(start_time: i64) void {
     const now = time.microTimestamp();
     const elapsed = now - start_time;
-    const seconds = @divTrunc(elapsed, time.ms_per_s);
+    const seconds = @divTrunc(elapsed, time.us_per_s);
     print("⏱️ {d} seconds\n", .{seconds});
     print("         exact microseconds: {d}\n", .{elapsed});
 }
