@@ -55,7 +55,7 @@ pub const Parts = struct {
     basename: []const u8,
     extension: []const u8,
     pub fn init(filepath: []const u8) !Parts {
-        print("initializing parts\n", .{});
+        //        print("initializing parts\n", .{});
         const dir = std.fs.path.dirname(filepath).?;
         const file = std.fs.path.basenamePosix(filepath);
         const dot_i = std.mem.lastIndexOfScalar(u8, file, '.'); //ROBOT:
@@ -137,7 +137,7 @@ pub const FolderParts = struct {
     foldername: []const u8,
 
     pub fn init(filepath: []const u8) !FolderParts {
-        print("initializing folder parts\n", .{});
+        //        print("initializing folder parts\n", .{});
         const dir = std.fs.path.dirname(filepath).?;
         const foldername = std.fs.path.basenamePosix(filepath);
         return FolderParts{
