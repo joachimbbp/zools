@@ -49,6 +49,9 @@ pub fn ls(path: []const u8, alloc: std.mem.Allocator) !ArrayList([]u8) {
     }
     return output;
 }
+//EXORCISM NEEDED:
+// Below is my versioning code. It us super cursed and needs to be DRYed (among other things)
+// it might also need to be moved to another section?
 pub const Parts = struct {
     directory: []const u8,
     filename: []const u8,
@@ -72,20 +75,21 @@ pub const Parts = struct {
         }
         return Parts{
             .directory = dir,
-            .filename = file, //WARN: might be weird for dirs
+            .filename = file,
             .basename = base,
             .extension = ext,
         };
     }
 };
 
-//CURSED: This whole version pattern is very cursed!
-//WARNING: presently this 1 indexes: 0 isn't treated as version number
-pub fn versionName(path_string: []const u8, arena: std.mem.Allocator, is_dir: bool) !ArrayList(u8) {
+// Returns a new name for the file if the file exists:
+// ham.txt -> ham_001.txt
+// Great for image sequences, but make sure these start on image_001.png
+pub fn versionName(path_string: []const u8, leading_zeros: u8, arena: std.mem.Allocator) !ArrayList(u8) {
     const version_delimiter = "_";
     var output = ArrayList(u8).init(arena);
 
-    if (!try exists(path_string)) { //WARN: Not sure if this works for dir
+    if (!try exists(path_string)) {
         for (path_string) |c| {
             try output.append(c);
         }
@@ -96,16 +100,7 @@ pub fn versionName(path_string: []const u8, arena: std.mem.Allocator, is_dir: bo
     var version: u32 = 1;
     var prefix: []const u8 = undefined;
 
-    var version_split = if (is_dir) //ROBOT: suggested pattern
-        std.mem.splitBackwardsSequence(u8, path_string, version_delimiter)
-    else
-        std.mem.splitBackwardsSequence(u8, parts.basename, version_delimiter);
-    // var version_split: std.mem.SplitIterator = undefined;
-    // if (is_dir) {
-    //     version_split = std.mem.splitBackwardsSequence(u8, path_string, version_delimiter, true);
-    // } else {
-    //     version_split = std.mem.splitBackwardsSequence(u8, parts.basename, version_delimiter, false);
-    // }
+    var version_split = std.mem.splitBackwardsSequence(u8, parts.basename, version_delimiter);
     const possible_version_number = version_split.first();
     if (string.isInteger(possible_version_number)) {
         version = try std.fmt.parseInt(u32, possible_version_number, 10) + 1;
@@ -116,13 +111,13 @@ pub fn versionName(path_string: []const u8, arena: std.mem.Allocator, is_dir: bo
     }
 
     var result: []const u8 = undefined;
-    if (is_dir) {
-        result = try std.fmt.allocPrint(arena, "{s}_{d}", .{ path_string, version });
-    } else {
-        result = try std.fmt.allocPrint(arena, "{s}/{s}_{d}.{s}", .{ parts.directory, prefix, version, parts.extension });
-    }
+    result = try std.fmt.allocPrint(
+        arena,
+        "{[dir]s}/{[pf]s}_{[n]d:0>[w]}.{[ext]s}",
+        .{ .dir = parts.directory, .pf = prefix, .n = version, .w = leading_zeros, .ext = parts.extension },
+    );
     if (try exists(result)) {
-        result = (try versionName(result, arena, is_dir)).items;
+        result = (try versionName(result, leading_zeros, arena)).items;
     }
 
     for (result) |c| {
@@ -147,6 +142,9 @@ pub const FolderParts = struct {
     }
 };
 
+//WARN: Unlike versionName, folderVersionName does not accept leading zeros
+//This is because I'm probably not going to be writing big sequences of folders
+//But eventually we should (probably) DRY these
 pub fn folderVersionName(folderpath: []const u8, arena: std.mem.Allocator) !ArrayList(u8) {
     const version_delimiter = "_";
     var output = ArrayList(u8).init(arena);

@@ -2,7 +2,7 @@ const std = @import("std");
 const time = std.time;
 const print = std.debug.print;
 
-pub const Self = @This();
+// pub const Self = @This();
 
 // Records the time in microseconds
 pub fn Click() i64 {

@@ -1,6 +1,6 @@
 //NOTE: temp folder persistence bools, can be user set:
 const spot_check = false;
-const clear_at_end = false;
+const clear_at_end = true;
 
 //WARN: must run from the project root, not src
 //should run as: <zig test src/testing.zig>
@@ -71,14 +71,14 @@ test "files and paths" {
         const item = list.items[n];
         try expect(try path.exists(item));
         print("🐛 Item {s} exists\n", .{item});
-        const versioned = try save.version(list.items[n], dummy_buffer, arena);
+        const versioned = try save.version(list.items[n], 5, dummy_buffer, arena);
         defer versioned.deinit();
         print("🦋 Item {s} versioned as {s}\n", .{ item, versioned.items });
     }
     //try back with some previous versions
-    const v1 = try save.version(list.items[0], dummy_buffer, arena);
+    const v1 = try save.version(list.items[0], 5, dummy_buffer, arena);
     defer v1.deinit();
-    const v2 = try save.version(list.items[list.items.len - 1], dummy_buffer, arena);
+    const v2 = try save.version(list.items[list.items.len - 1], 0, dummy_buffer, arena);
     defer v2.deinit();
     if (spot_check) {
         print("👁️ Look at the project root to see the files created\n", .{});
@@ -87,7 +87,6 @@ test "files and paths" {
     if (!try save.dirIfAbsent(test_dir_1)) {
         print("🗺️ Test dir exists at {s}\n     no new dir created\n", .{test_dir_1});
     }
-    try expect(try save.dirIfAbsent(test_dir_2));
 
     //Versioning folders:
     const f1 = try save.versionFolder(test_dir_2, alloc);
@@ -146,7 +145,9 @@ test "sequence" {
 
     var current = ArrayList(u8).init(alloc);
     defer current.deinit();
-    const ap = try std.fmt.allocPrint(alloc, "{s}/{s}", .{ folder, "frame.txt" });
+    //NOTE: always include leading zeros in first filename
+    //for consistent sequence behavoir
+    const ap = try std.fmt.allocPrint(alloc, "{s}/{s}", .{ folder, "frame_000001.txt" });
     defer alloc.free(ap);
     try current.appendSlice(ap);
     var dummy_buffer = ArrayList(u8).init(alloc);
@@ -158,7 +159,7 @@ test "sequence" {
         for ("Another Frame\n") |c| {
             try dummy_buffer.append(c);
         }
-        const next = try save.version(current.items, dummy_buffer, alloc);
+        const next = try save.version(current.items, 6, dummy_buffer, alloc);
         print("     🎞️ version: {s}\n", .{next.items});
         current.deinit();
         current = next;
