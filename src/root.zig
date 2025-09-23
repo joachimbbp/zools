@@ -5,3 +5,4 @@ pub const path = @import("path.zig");
 pub const save = @import("save.zig");
 pub const uuid = @import("uuid.zig");
 pub const timer = @import("timer.zig");
+pub const math = @import("math.zig");
