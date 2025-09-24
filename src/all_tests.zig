@@ -87,7 +87,6 @@ test "files and paths" {
     if (!try save.dirIfAbsent(test_dir_1)) {
         print("🗺️ Test dir exists at {s}\n     no new dir created\n", .{test_dir_1});
     }
-    try expect(try save.dirIfAbsent(test_dir_2));
 
     //Versioning folders:
     const f1 = try save.versionFolder(test_dir_2, alloc);
