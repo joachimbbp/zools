@@ -14,13 +14,14 @@ pub fn dirIfAbsent(path_string: []const u8) !bool {
     return false;
 }
 
+//TODO: SHould be called fileVersion or
+//generally un-curse this whole versioning logic
 pub fn version(
     path_string: []const u8,
-    leading_zeros: u8,
     buffer: ArrayList(u8),
     alloc: std.mem.Allocator,
 ) !ArrayList(u8) {
-    const file_name = try path.versionName(path_string, leading_zeros, alloc);
+    const file_name = try path.versionName(path_string, alloc, false);
     const file = try std.fs.cwd().createFile(file_name.items, .{});
     try file.writeAll(buffer.items);
     defer file.close();
