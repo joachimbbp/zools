@@ -1,6 +1,6 @@
 const std = @import("std");
 
-fn numDigitsShort(n: u16) u8 { //LLM: heavily inspired by chatGPT code
+pub fn numDigitsShort(n: u16) u8 { //LLM: heavily inspired by chatGPT code
     if (n == 0) return 1;
     var count: u8 = 0;
     var value = n;

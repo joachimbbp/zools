@@ -17,5 +17,8 @@ Uses zig version `0.15.1`.
 - [ ] 🗃️ `gitignore` for test files and folders
 	- Probably can be read from some shared config file
 - [ ] 🧟 Fixed cursed save-as logic and naming conventions in `save.zig` and `path.zig`
-    - [ ] 🧪 Add tests for these as well
+- [ ] 🧪 Add for:
+    - [ ] sequence (and replace the somewhat cursed sequence test you have now)
+    - [ ] math
+
 - [ ] 📇 Establish naming and arg-order conventions (especially for allocators)

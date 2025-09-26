@@ -6,3 +6,4 @@ pub const save = @import("save.zig");
 pub const uuid = @import("uuid.zig");
 pub const timer = @import("timer.zig");
 pub const math = @import("math.zig");
+pub const sequence = @import("sequence.zig");
