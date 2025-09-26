@@ -10,7 +10,7 @@ const std = @import("std");
 const path = @import("path.zig");
 const string = @import("string.zig");
 
-fn elementName(dir: []const u8, basename: []const u8, extension: []const u8, version: usize, leading_zeros: u8, alloc: std.mem.Allocator) ![]const u8 {
+pub fn elementName(dir: []const u8, basename: []const u8, extension: []const u8, version: usize, leading_zeros: u8, alloc: std.mem.Allocator) ![]const u8 {
     //    var output = ArrayList(u8).init(arena);
     var result: []const u8 = undefined;
     result = try std.fmt.allocPrint(
