@@ -21,7 +21,7 @@ pub fn version(
     buffer: ArrayList(u8),
     alloc: std.mem.Allocator,
 ) !ArrayList(u8) {
-    const file_name = try path.versionName(path_string, alloc, false);
+    const file_name = try path.versionName(path_string, alloc);
     const file = try std.fs.cwd().createFile(file_name.items, .{});
     try file.writeAll(buffer.items);
     defer file.close();

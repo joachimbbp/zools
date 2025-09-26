@@ -81,7 +81,7 @@ pub const Parts = struct {
 
 //CURSED: This whole version pattern is very cursed!
 //WARNING: presently this 1 indexes: 0 isn't treated as version number
-pub fn versionName(path_string: []const u8, arena: std.mem.Allocator, is_dir: bool) !ArrayList(u8) {
+pub fn versionName(path_string: []const u8, arena: std.mem.Allocator) !ArrayList(u8) {
     const version_delimiter = "_";
     var output = ArrayList(u8).init(arena);
 
@@ -96,16 +96,8 @@ pub fn versionName(path_string: []const u8, arena: std.mem.Allocator, is_dir: bo
     var version: u32 = 1;
     var prefix: []const u8 = undefined;
 
-    var version_split = if (is_dir) //ROBOT: suggested pattern
-        std.mem.splitBackwardsSequence(u8, path_string, version_delimiter)
-    else
-        std.mem.splitBackwardsSequence(u8, parts.basename, version_delimiter);
-    // var version_split: std.mem.SplitIterator = undefined;
-    // if (is_dir) {
-    //     version_split = std.mem.splitBackwardsSequence(u8, path_string, version_delimiter, true);
-    // } else {
-    //     version_split = std.mem.splitBackwardsSequence(u8, parts.basename, version_delimiter, false);
-    // }
+    var version_split = std.mem.splitBackwardsSequence(u8, parts.basename, version_delimiter);
+
     const possible_version_number = version_split.first();
     if (string.isInteger(possible_version_number)) {
         version = try std.fmt.parseInt(u32, possible_version_number, 10) + 1;
@@ -116,13 +108,11 @@ pub fn versionName(path_string: []const u8, arena: std.mem.Allocator, is_dir: bo
     }
 
     var result: []const u8 = undefined;
-    if (is_dir) {
-        result = try std.fmt.allocPrint(arena, "{s}_{d}", .{ path_string, version });
-    } else {
-        result = try std.fmt.allocPrint(arena, "{s}/{s}_{d}.{s}", .{ parts.directory, prefix, version, parts.extension });
-    }
+
+    result = try std.fmt.allocPrint(arena, "{s}/{s}_{d}.{s}", .{ parts.directory, prefix, version, parts.extension });
+
     if (try exists(result)) {
-        result = (try versionName(result, arena, is_dir)).items;
+        result = (try versionName(result, arena)).items;
     }
 
     for (result) |c| {
