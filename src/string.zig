@@ -10,3 +10,11 @@ pub fn isInteger(chars: []const u8) bool {
     }
     return true;
 }
+
+test "strings" {
+    std.debug.print("🎻 testing strings\n", .{});
+    std.debug.print("module level\n", .{});
+    try std.testing.expect(isInteger("42"));
+    try std.testing.expect(isInteger("0"));
+    try std.testing.expect(!isInteger("ham"));
+}

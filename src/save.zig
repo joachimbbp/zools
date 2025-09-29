@@ -33,13 +33,15 @@ pub fn versionFolder(path_string: []const u8, arena: std.mem.Allocator) !ArrayLi
     try std.fs.cwd().makeDir(folder_name.items);
     return folder_name;
 }
-test "folder version" {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const alloc = gpa.allocator();
-    var arena_alloc = std.heap.ArenaAllocator.init(alloc);
-    defer arena_alloc.deinit();
-    const arena = arena_alloc.allocator(); //wow that is confusing naming!
-    const new_name = try versionFolder("/Users/joachimpfefferkorn/Desktop/lib_test", arena);
-    std.debug.print("folder versioned at: {s}\n", .{new_name.items});
-}
+
+// test "folder version" {
+//     //TODO: Temp folder only
+//     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+//     defer _ = gpa.deinit();
+//     const alloc = gpa.allocator();
+//     var arena_alloc = std.heap.ArenaAllocator.init(alloc);
+//     defer arena_alloc.deinit();
+//     const arena = arena_alloc.allocator(); //wow that is confusing naming!
+//     const new_name = try versionFolder("/Users/joachimpfefferkorn/Desktop/lib_test", arena);
+//     std.debug.print("folder versioned at: {s}\n", .{new_name.items});
+// }
