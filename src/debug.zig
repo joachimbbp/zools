@@ -6,3 +6,7 @@ const print = std.debug.print;
 pub fn helloZools() void {
     print("🦎 Hello Zools! 🦎\n", .{});
 }
+
+test "hello and debug" {
+    helloZools();
+}

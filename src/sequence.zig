@@ -28,13 +28,14 @@ test "iterate" {
     //      write new element name
     //      make sure you're not overwriting an existing file (panic for now)
     //      write sequence element
+    std.debug.print("🎥 Testing sequence iteration: \n", .{});
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const alloc = gpa.allocator();
 
     for (0..24) |i| {
         const name = try elementName("ham/spam", "land", "png", i, 3, alloc);
-        std.debug.print("name: {s}\n", .{name});
+        std.debug.print("   name: {s}\n", .{name});
         alloc.free(name);
     }
 }

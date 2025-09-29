@@ -10,7 +10,6 @@ pub fn numDigitsShort(n: u16) u8 { //LLM: heavily inspired by chatGPT code
     return count;
 }
 
-//TODO: Move to testing
 const expect = std.testing.expect;
 test "num digits" {
     try expect(numDigitsShort(100) == 3);

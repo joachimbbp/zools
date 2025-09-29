@@ -20,3 +20,10 @@ pub fn v4() [36]u8 {
     }
     return result;
 }
+
+test "UUID" {
+    std.debug.print("🎲 ten, totally random UUIDs (UUID Version 4):\n", .{});
+    for (0..10) |_| {
+        std.debug.print("      🪪 {s}\n", .{v4()});
+    }
+}

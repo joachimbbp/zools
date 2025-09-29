@@ -5,7 +5,6 @@
 # 🦎
 Helpful zig abstractions.
 
-
 # 🏗️
 Test by running `zig build test` from the root. 
 
@@ -13,12 +12,10 @@ Test by running `zig build test` from the root.
 Uses zig version `0.15.1`.
 
 # 📋 To-Do
-- [ ] 📜 CLI for `spot_check` and `clear_at_end` in `src/all-tests.zig`
-- [ ] 🗃️ `gitignore` for test files and folders
-	- Probably can be read from some shared config file
-- [ ] 🧟 Fixed cursed save-as logic and naming conventions in `save.zig` and `path.zig`
-- [ ] 🧪 Add for:
-    - [ ] sequence (and replace the somewhat cursed sequence test you have now)
-    - [ ] math
+- [ ] 🗃️ `std.testing.TempDir` for test files and folders
+- [ ] 🧟 Fixed cursed save-as logic and naming conventions in `save.zig` and `path.zig` (and update the testing to match)
+- [ ] 🧪 Add testing for:
+    - [x] sequence (and replace the somewhat cursed sequence test you have now)
+    - [x] math
 
 - [ ] 📇 Establish naming and arg-order conventions (especially for allocators)

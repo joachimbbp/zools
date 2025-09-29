@@ -1,3 +1,8 @@
+//DEPRECATED:
+//These tests are only for the very cursed, old versioning code
+//which -here- is being used for sequencing. This is very much
+//not how to sequence things. Furthermore, we are moving to individual
+//tests living in each, individual module
 //NOTE: temp folder persistence bools, can be user set:
 const spot_check = false;
 const clear_at_end = true;
@@ -26,15 +31,6 @@ const test_files_csv = "ham.txt,spam.txt,version_me_41.txt,land.txt";
 
 const helpers = @import("test_helpers.zig");
 
-test "hello and debug" {
-    debug.helloZools();
-}
-
-test "timers" {
-    const start = t.Click();
-    defer t.Stop(start);
-    std.Thread.sleep(3333000);
-}
 //PATH STUFF:
 test "files and paths" {
     //random UUID path does not exist
@@ -102,21 +98,7 @@ test "files and paths" {
         try std.fs.cwd().deleteTree(test_dir_2);
     }
 }
-test "strings" {
-    print("🎻 testing strings\n", .{});
-    const csv_string = "0,1,2,3,4,5,6,7,8,9,10";
-    var csv_iter = std.mem.splitSequence(u8, csv_string, ",");
-    print("csv iter debug: {d}\n", .{csv_iter.index.?});
-    var i: usize = 0;
-    while (csv_iter.next()) |value| : (i += 1) {
-        print("     🪕value {s} should equal index {d}\n", .{ value, i });
-        try std.testing.expectEqual(std.fmt.parseInt(usize, value, 10), i);
-    }
 
-    try expect(string.isInteger("42"));
-    try expect(string.isInteger("0"));
-    try expect(!string.isInteger("ham"));
-}
 
 test "parts" {
     const sample = "/Users/joachimpfefferkorn/repos/neurovolume/src/zools/README.md";
@@ -171,12 +153,7 @@ test "sequence" {
     }
 }
 
-test "UUID" {
-    print("🎲 ten, totally random UUIDs (UUID Version 4):\n", .{});
-    for (0..10) |_| {
-        std.debug.print("      🪪 {s}\n", .{uuid.v4()});
-    }
-}
+
 test "end" {
     print("🏁Tests have ended\n", .{});
 }
