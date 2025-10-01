@@ -8,10 +8,9 @@ pub const uuid = @import("uuid.zig");
 pub const timer = @import("timer.zig");
 pub const math = @import("math.zig");
 pub const sequence = @import("sequence.zig");
-
+pub const matrix = @import("matrix.zig");
 test {
-
-std.testing.refAllDecls(@This());
+    std.testing.refAllDecls(@This());
 }
 //TODO:
 //FIx build system to match nvol and bring back refldecls (you lost it in git gore stuff)
