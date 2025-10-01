@@ -12,5 +12,3 @@ pub const matrix = @import("matrix.zig");
 test {
     std.testing.refAllDecls(@This());
 }
-//TODO:
-//FIx build system to match nvol and bring back refldecls (you lost it in git gore stuff)
