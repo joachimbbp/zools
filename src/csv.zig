@@ -19,12 +19,14 @@ pub fn fromSimpleStruct(alloc: std.mem.Allocator, s: anytype) ![]u8 {
                 try csv.append(c);
             }
             try csv.append(',');
+            alloc.free(ascii_value);
         } else {
             const ascii_value = try std.fmt.allocPrint(alloc, "{any}", .{raw_value});
             for (ascii_value) |c| {
                 try csv.append(c);
             }
             try csv.append(',');
+            alloc.free(ascii_value);
         }
     }
     return csv.toOwnedSlice();
