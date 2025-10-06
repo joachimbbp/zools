@@ -14,7 +14,7 @@ Uses zig version `0.15.1`.
 # 📋 To-Do
 - [ ] 🗃️ `std.testing.TempDir` for test files and folders
 - [ ] 🧟 Fixed cursed save-as logic and naming conventions in `save.zig` and `path.zig` (and update the testing to match)
-- [ ] 🧪 Add testing for:
+- [x] 🧪 Add testing for:
     - [x] sequence (and replace the somewhat cursed sequence test you have now)
     - [x] math
 
