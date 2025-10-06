@@ -2,18 +2,19 @@ const std = @import("std");
 
 //s is a struct
 //Does not work for nested structs
-pub fn fromSimpleStruct(s: anytype) void {
-    //reutnr will be: ![]const u8
+pub fn fromSimpleStruct(s: anytype) !void {
     const T = @TypeOf(s);
     const info = @typeInfo(T).@"struct";
 
-    //    var csv: std.array_list.Managed(u8) = undefined;
     inline for (info.fields) |field| {
         const value = @field(s, field.name);
-        //debug print for now
-        //TODO: Char8s format as letters if given the option
-        std.debug.print("{s} = {any}\n", .{ field.name, value });
-        //TODO: actually append this to a csv: even is key and odd is value
+        if (comptime std.mem.eql(u8, @typeName(@TypeOf(value)), "[]const u8")) {
+            std.debug.print("{s} = {s}\n", .{ field.name, value }); //problem here
+            std.debug.print("       type of value: {s}\n", .{@typeName(@TypeOf(value))});
+        } else {
+            std.debug.print("{s} = {any}\n", .{ field.name, value });
+            std.debug.print("       type of value: {s}\n", .{@typeName(@TypeOf(value))});
+        }
     }
 }
 
@@ -51,5 +52,5 @@ test "from struct" {
         .o = 0.5,
     };
 
-    fromSimpleStruct(big);
+    try fromSimpleStruct(big);
 }
