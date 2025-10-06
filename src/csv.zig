@@ -1,21 +1,33 @@
 const std = @import("std");
 
-//s is a struct
+// Takes a simple non nested structs and returns a csv
+// even indices are the names, odds are the values
 //Does not work for nested structs
-pub fn fromSimpleStruct(s: anytype) !void {
+pub fn fromSimpleStruct(alloc: std.mem.Allocator, s: anytype) ![]u8 {
+    var csv = std.array_list.Managed(u8).init(alloc);
+
     const T = @TypeOf(s);
     const info = @typeInfo(T).@"struct";
 
     inline for (info.fields) |field| {
-        const value = @field(s, field.name);
-        if (comptime std.mem.eql(u8, @typeName(@TypeOf(value)), "[]const u8")) {
-            std.debug.print("{s} = {s}\n", .{ field.name, value }); //problem here
-            std.debug.print("       type of value: {s}\n", .{@typeName(@TypeOf(value))});
+        try csv.appendSlice(field.name);
+        try csv.append(',');
+        const raw_value = @field(s, field.name);
+        if (comptime std.mem.eql(u8, @typeName(@TypeOf(raw_value)), "[]const u8")) {
+            const ascii_value = try std.fmt.allocPrint(alloc, "{s}", .{raw_value});
+            for (ascii_value) |c| {
+                try csv.append(c);
+            }
+            try csv.append(',');
         } else {
-            std.debug.print("{s} = {any}\n", .{ field.name, value });
-            std.debug.print("       type of value: {s}\n", .{@typeName(@TypeOf(value))});
+            const ascii_value = try std.fmt.allocPrint(alloc, "{any}", .{raw_value});
+            for (ascii_value) |c| {
+                try csv.append(c);
+            }
+            try csv.append(',');
         }
     }
+    return csv.toOwnedSlice();
 }
 
 //TESTING:
@@ -51,6 +63,11 @@ test "from struct" {
         .n = .{ 10, 20 },
         .o = 0.5,
     };
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const gpa_alloc = gpa.allocator();
+    defer _ = gpa.deinit();
 
-    try fromSimpleStruct(big);
+    const test_csv = try fromSimpleStruct(gpa_alloc, big);
+    defer gpa_alloc.free(test_csv);
+    std.debug.print("test CSV:\n{s}", .{test_csv});
 }
