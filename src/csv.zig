@@ -2,7 +2,10 @@ const std = @import("std");
 
 // Takes a simple non nested structs and returns a csv
 // even indices are the names, odds are the values
-//Does not work for nested structs
+// Does not work for nested structs
+// Quotes "must have \"propper escape chars\" around the double quotes"
+//WARN: possible edge case: you read in a " right from disk into a struct and then yeet it into memory
+// That might break this so you'll want to sanitize those after reading!
 pub fn fromSimpleStruct(alloc: std.mem.Allocator, s: anytype) ![]u8 {
     var csv = std.array_list.Managed(u8).init(alloc);
 
@@ -14,7 +17,7 @@ pub fn fromSimpleStruct(alloc: std.mem.Allocator, s: anytype) ![]u8 {
         try csv.append(',');
         const raw_value = @field(s, field.name);
         if (comptime std.mem.eql(u8, @typeName(@TypeOf(raw_value)), "[]const u8")) {
-            const ascii_value = try std.fmt.allocPrint(alloc, "{s}", .{raw_value});
+            const ascii_value = try std.fmt.allocPrint(alloc, "\"{s}\"", .{raw_value});
             for (ascii_value) |c| {
                 try csv.append(c);
             }
@@ -54,13 +57,13 @@ test "from struct" {
         .a = 123,
         .b = true,
         .c = 3.14159,
-        .d = "hello",
+        .d = "hello world",
         .e = .{ 1, 2, 3, 4, 5 },
         .f = null,
-        .g = "optional string",
+        .g = "MR. Has Commas, MD, oh no!",
         .i = .{ 0.1, 0.2, 0.3 },
         .k = 255,
-        .l = "zig struct test",
+        .l = "Here, someone decided to \"quote\" something!",
         .m = false,
         .n = .{ 10, 20 },
         .o = 0.5,
