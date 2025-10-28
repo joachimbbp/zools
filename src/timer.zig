@@ -6,18 +6,23 @@ const print = std.debug.print;
 pub fn Click() i64 {
     return time.microTimestamp();
 }
-// Returns and prints the difference between the current and given time
-pub fn Stop(start_time: i64) void {
+
+pub fn Lap(
+    click: i64,
+    memo: []const u8,
+) i64 {
     const now = time.microTimestamp();
-    const elapsed = now - start_time;
+    const elapsed = now - click;
     const seconds = @divTrunc(elapsed, time.us_per_s);
-    print("⏱️ {d} seconds\n", .{seconds});
+    print("{s}\n", .{memo});
+    print("     ⏱️ {d} seconds\n", .{seconds});
     print("         exact microseconds: {d}\n", .{elapsed});
+    return elapsed;
 }
 
 test "timers" {
     print("timer test:\n", .{});
     const start = Click();
-    defer Stop(start);
+    defer _ = Lap(start, "Timer Testing");
     std.Thread.sleep(3333000);
 }
