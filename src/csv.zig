@@ -111,5 +111,5 @@ test "from struct" {
 
     const test_csv = try fromSimpleStruct(gpa_alloc, big);
     defer gpa_alloc.free(test_csv);
-    std.debug.print("test CSV:\n{s}", .{test_csv});
+    std.debug.print("📑 test CSV:\n{s}\n", .{test_csv});
 }

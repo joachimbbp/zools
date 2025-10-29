@@ -10,6 +10,7 @@ pub const math = @import("math.zig");
 pub const sequence = @import("sequence.zig");
 pub const matrix = @import("matrix.zig");
 pub const csv = @import("csv.zig");
+pub const zip = @import("zip.zig");
 test {
     std.testing.refAllDecls(@This());
 }
