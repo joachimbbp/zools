@@ -11,6 +11,7 @@ pub const sequence = @import("sequence.zig");
 pub const matrix = @import("matrix.zig");
 pub const csv = @import("csv.zig");
 pub const zip = @import("zip.zig");
+pub const slice = @import("slice.zig");
 test {
     std.testing.refAllDecls(@This());
 }

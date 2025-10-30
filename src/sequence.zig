@@ -10,8 +10,17 @@ const std = @import("std");
 const path = @import("path.zig");
 const string = @import("string.zig");
 
-pub fn elementName(dir: []const u8, basename: []const u8, extension: []const u8, version: usize, leading_zeros: u8, alloc: std.mem.Allocator) ![]const u8 {
-    //    var output = ArrayList(u8).init(arena);
+// Builds an name with a version and leading zeros
+// For example: ham_01.png, ham_02.png, ... , ham_42.png, ham_43.png
+// Useful for creating image sequences in VFX pipelines
+pub fn elementName(
+    dir: []const u8,
+    basename: []const u8,
+    extension: []const u8,
+    version: usize,
+    leading_zeros: u8,
+    alloc: std.mem.Allocator,
+) ![]const u8 {
     var result: []const u8 = undefined;
     result = try std.fmt.allocPrint(
         alloc,
